@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NavBot 2050 — Simulador de Navegação em Grafo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #04070d;
+            --bg-panel: #0a101d;
+            --bg-sub: #060a12;
+            --border: #172542;
+            --blue-primary: #2563eb;
+            --blue-glow: #38bdf8;
+            --blue-soft: rgba(37, 99, 235, 0.16);
+            --red-alert: #ef4444;
+            --green-ok: #10b981;
+            --text: #f1f5f9;
+            --muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text);
+            padding-bottom: 50px;
+        }
+        .header {
+            background: rgba(10, 16, 29, 0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 30;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 15px;
+            color: #fff;
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+        }
+        .brand h1 {
+            font-size: 17px;
+            letter-spacing: 0.3px;
+        }
+        .brand span {
+            font-size: 12px;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .operator-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+        .role-chip {
+            padding: 5px 11px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: var(--blue-soft);
+            color: var(--blue-glow);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        .btn-logout {
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 7px 13px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-sub);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .btn-logout:hover {
+            border-color: var(--blue-glow);
+        }
+        .container {
+            max-width: 1260px;
+            margin: 24px auto;
+            padding: 0 22px;
+        }
+        .flash-msg {
+            padding: 13px 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            font-weight: 600;
+        }
+        .flash-ok {
+            background: rgba(37, 99, 235, 0.16);
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            color: #bae6fd;
+        }
+        .flash-err {
+            background: rgba(239, 68, 68, 0.16);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            color: #fecaca;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+        .kpi-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--blue-glow);
+        }
+        .kpi-label {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .kpi-val {
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 6px;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1.35fr 0.65fr;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+        @media (max-width: 980px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .panel-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .panel-top h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+        .map-canvas {
+            background: #050912;
+            border: 1px solid #152238;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            background-image:
+                linear-gradient(rgba(37, 99, 235, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37, 99, 235, 0.07) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        svg.grafo-svg {
+            width: 100%;
+            height: 410px;
+            display: block;
+        }
+        .edge-line {
+            stroke: #1e293b;
+            stroke-width: 3;
+        }
+        .edge-active {
+            stroke: #38bdf8;
+            stroke-width: 4.5;
+            stroke-dasharray: 8 5;
+            animation: dashMove 1.2s linear infinite;
+        }
+        @keyframes dashMove {
+            to { stroke-dashoffset: -26; }
+        }
+        .edge-weight {
+            fill: #64748b;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+        }
+        .node-circle {
+            fill: #0f172a;
+            stroke: #2563eb;
+            stroke-width: 2.5;
+            cursor: pointer;
+            transition: r 0.2s;
+        }
+        .node-current {
+            fill: #1d4ed8;
+            stroke: #38bdf8;
+            stroke-width: 4;
+        }
+        .node-blocked {
+            fill: #450a0a;
+            stroke: #ef4444;
+            stroke-width: 3;
+        }
+        .node-restricted {
+            stroke: #f59e0b;
+        }
+        .node-code {
+            fill: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+        .node-title {
+            fill: #cbd5e1;
+            font-size: 11px;
+            font-weight: 500;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        .route-banner {
+            margin-top: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            background: var(--bg-sub);
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+        .route-path {
+            color: var(--blue-glow);
+            font-weight: 700;
+        }
+        .btn {
+            padding: 9px 14px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: var(--bg-sub);
+            color: #e2e8f0;
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn:hover {
+            border-color: var(--blue-glow);
+            color: #fff;
+        }
+        .btn-blue {
+            background: var(--blue-primary);
+            border-color: #3b82f6;
+            color: #fff;
+        }
+        .btn-blue:hover {
+            background: #1d4ed8;
+        }
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+        .room-list {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+        .room-row {
+            background: var(--bg-sub);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .room-info strong {
+            font-size: 13px;
+            display: block;
+        }
+        .room-info span {
+            font-size: 11px;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+        @media (max-width: 960px) {
+            .bottom-grid { grid-template-columns: 1fr; }
+        }
+        .mission-card {
+            background: var(--bg-sub);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 13px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .prio-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(37, 99, 235, 0.22);
+            color: var(--blue-glow);
+        }
+        .status-done {
+            color: var(--green-ok);
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+        .status-wait {
+            color: #f59e0b;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+        .form-stack {
+            display: grid;
+            gap: 11px;
+        }
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: var(--bg-sub);
+            color: #fff;
+            font-family: inherit;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="brand">
+            <div class="brand-badge">R2</div>
+            <div>
+                <h1>NAVBOT 2050 // PATHFINDING EM GRAFO</h1>
+                <span>Algoritmo de Dijkstra · Fila de Prioridade · Pilha LIFO · POO</span>
+            </div>
+        </div>
+        <div class="operator-bar">
+            <span>Operador: <strong>{{ usuario.nome_exibicao }}</strong></span>
+            <span class="role-chip">{{ usuario.perfil }}</span>
+            <a class="btn-logout" href="{{ url_for('logout') }}">Trocar Conta</a>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash-msg {{ 'flash-err' if category == 'erro' else 'flash-ok' }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Posição Atual no Grafo</div>
+                <div class="kpi-val">{{ robo.no_atual }}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Bateria da Unidade (POO)</div>
+                <div class="kpi-val">{{ robo.bateria_pct }}%</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Distância Percorrida</div>
+                <div class="kpi-val">{{ robo.distancia_acumulada_m }} m</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Pilha LIFO / Fila Prioridade</div>
+                <div class="kpi-val">{{ total_pilha }} / {{ fila_atual|length }}</div>
+            </div>
+        </section>
+
+        <section class="main-layout">
+            <div class="panel">
+                <div class="panel-top">
+                    <h2>Planta da Residência 2050 — Topologia em Grafo Ponderado</h2>
+                    <div style="display:flex; gap:8px;">
+                        <form method="POST" action="{{ url_for('recarregar_base') }}">
+                            <button type="submit" class="btn">⚡ Retornar à BASE (100%)</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('desfazer_passo_pilha') }}">
+                            <button type="submit" class="btn">↩ Desfazer Rota (Pilha LIFO: {{ total_pilha }})</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="map-canvas">
+                    <svg class="grafo-svg" viewBox="0 0 700 400">
+                        {% for a in arestas %}
+                          {% set c1 = mapa_comodos[a.origem] %}
+                          {% set c2 = mapa_comodos[a.destino] %}
+                          {% set mx = (c1.pos_x + c2.pos_x) // 2 %}
+                          {% set my = (c1.pos_y + c2.pos_y) // 2 %}
+                          <line
+                              x1="{{ c1.pos_x }}" y1="{{ c1.pos_y }}"
+                              x2="{{ c2.pos_x }}" y2="{{ c2.pos_y }}"
+                              class="edge-line {{ 'edge-active' if (a.origem in rota_nos and a.destino in rota_nos) else '' }}"
+                          />
+                          <rect x="{{ mx - 18 }}" y="{{ my - 9 }}" width="36" height="16" rx="4" fill="#050912" stroke="#172542" />
+                          <text x="{{ mx }}" y="{{ my + 3 }}" text-anchor="middle" class="edge-weight">{{ a.metros }}m</text>
+                        {% endfor %}
+
+                        {% for c in comodos %}
+                          <g>
+                            <circle
+                                cx="{{ c.pos_x }}" cy="{{ c.pos_y }}" r="24"
+                                class="node-circle
+                                  {{ 'node-current' if robo.no_atual == c.codigo else '' }}
+                                  {{ 'node-blocked' if c.bloqueado else '' }}
+                                  {{ 'node-restricted' if c.restrito_admin and not c.bloqueado else '' }}"
+                            />
+                            <text x="{{ c.pos_x }}" y="{{ c.pos_y }}" class="node-code">{{ c.codigo }}</text>
+                            <text x="{{ c.pos_x }}" y="{{ c.pos_y + 38 }}" class="node-title">
+                                {{ c.nome }}{{ ' [BLOQUEADO]' if c.bloqueado else '' }}
+                            </text>
+                          </g>
+                        {% endfor %}
+
+                        <circle id="roboMarker" cx="{{ mapa_comodos[robo.no_atual].pos_x }}" cy="{{ mapa_comodos[robo.no_atual].pos_y }}" r="10" fill="#38bdf8">
+                            <animate attributeName="r" values="8;13;8" dur="1.4s" repeatCount="indefinite" />
+                        </circle>
+                    </svg>
+                </div>
+
+                <div class="route-banner">
+                    <div>
+                        <span>ÚLTIMO CAMINHO MÍNIMO (DIJKSTRA): </span>
+                        <span class="route-path">{{ robo.ultima_rota }}</span>
+                    </div>
+                    <span style="color:var(--muted);">Azul = Robô · Vermelho = Obstáculo · Amarelo = Restrito Admin</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-top">
+                    <h2>Controle de Nós &amp; Obstáculos</h2>
+                </div>
+                <div class="room-list">
+                    {% for c in comodos %}
+                    <div class="room-row">
+                        <div class="room-info">
+                            <strong>{{ c.codigo }} — {{ c.nome }}</strong>
+                            <span>
+                                {{ '🔒 Área Restrita Admin' if c.restrito_admin else 'Área Comum' }}
+                                {{ ' · ⛔ INTERDITADO' if c.bloqueado else ' · Livre' }}
+                            </span>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <form method="POST" action="{{ url_for('navegar_dijkstra') }}">
+                                <input type="hidden" name="destino" value="{{ c.codigo }}">
+                                <button type="submit" class="btn btn-blue">Ir (Dijkstra)</button>
+                            </form>
+                            {% if usuario.perfil == 'administrador' and c.codigo != 'BASE' %}
+                            <form method="POST" action="{{ url_for('alternar_obstaculo', codigo=c.codigo) }}">
+                                <button type="submit" class="btn {{ 'btn-danger' if not c.bloqueado else '' }}">
+                                    {{ 'Liberar' if c.bloqueado else 'Bloquear' }}
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="bottom-grid">
+            <div class="panel">
+                <div class="panel-top">
+                    <h2>Fila de Prioridade de Missões do Robô</h2>
+                    <div style="display:flex; gap:8px;">
+                        <form method="POST" action="{{ url_for('carregar_fila') }}">
+                            <button type="submit" class="btn">Enfileirar Pendentes</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('executar_proxima_fila') }}">
+                            <button type="submit" class="btn btn-blue">Executar Próxima da Fila ({{ fila_atual|length }})</button>
+                        </form>
+                    </div>
+                </div>
+
+                {% for m in missoes %}
+                <div class="mission-card">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                            <span class="prio-tag">P{{ m.prioridade }}</span>
+                            <strong>{{ m.titulo }}</strong>
+                        </div>
+                        <div style="font-size:12px; color:var(--muted); font-family:'JetBrains Mono', monospace;">
+                            {{ m.origem }} &rarr; {{ m.destino }} · {{ m.descricao_operacao() }}
+                            {% if m.rota_calculada %}
+                              · Rota: <span style="color:var(--blue-glow);">{{ m.rota_calculada }} ({{ m.distancia_metros }}m)</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="{{ 'status-done' if m.status == 'concluida' else 'status-wait' }}">
+                            {{ m.status|upper }}
+                        </span>
+                        {% if usuario.perfil == 'administrador' %}
+                        <form method="POST" action="{{ url_for('excluir_missao', id_missao=m.id_missao) }}">
+                            <button type="submit" class="btn btn-danger" style="padding:5px 9px;">✕</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="panel">
+                <div class="panel-top">
+                    <h2>Nova Missão para o Robô (POO + Validação)</h2>
+                </div>
+                <form method="POST" action="{{ url_for('nova_missao') }}" class="form-stack">
+                    <div>
+                        <label>Descrição da Missão</label>
+                        <input type="text" name="titulo" placeholder="Ex: Entregar kit médico na Suíte" required>
+                    </div>
+                    <div class="row-2">
+                        <div>
+                            <label>Classe POO da Missão</label>
+                            <select name="tipo">
+                                <option value="entrega">MissaoEntrega (Carga)</option>
+                                <option value="limpeza">MissaoLimpeza (UV)</option>
+                                <option value="patrulha">MissaoPatrulha (Só Admin)</option>
+                                <option value="emergencia">MissaoEmergencia (Só Admin)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Prioridade (1 a 5)</label>
+                            <input type="text" name="prioridade" value="3" required>
+                        </div>
+                    </div>
+                    <div class="row-2">
+                        <div>
+                            <label>Nó de Origem</label>
+                            <select name="origem">
+                                {% for c in comodos %}
+                                <option value="{{ c.codigo }}">{{ c.codigo }} — {{ c.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label>Nó de Destino</label>
+                            <select name="destino">
+                                {% for c in comodos %}
+                                <option value="{{ c.codigo }}" {{ 'selected' if c.codigo == 'SALA' else '' }}>{{ c.codigo }} — {{ c.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label>Peso da Carga em kg (Validação Numérica)</label>
+                        <input type="text" name="carga_kg" value="1.5" required>
+                    </div>
+                    <button type="submit" class="btn btn-blue" style="padding:12px;">Cadastrar Missão no SQLite</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-top">
+                <h2>Log de Telemetria, Dijkstra &amp; Auditoria de Acesso (SQLite)</h2>
+            </div>
+            {% for l in logs %}
+            <div class="mission-card" style="margin-bottom:8px;">
+                <div>
+                    <strong style="color:var(--blue-glow);">{{ l.usuario }}</strong>
+                    <span style="font-size:11px; color:var(--muted);">[{{ l.perfil }}]</span> — {{ l.evento }}
+                </div>
+                <span style="font-size:11px; color:var(--muted); font-family:'JetBrains Mono', monospace;">{{ l.data_hora }}</span>
+            </div>
+            {% endfor %}
+        </section>
+    </main>
+
+    <script>
+        const coords = {
+            {% for c in comodos %}
+            "{{ c.codigo }}": { x: {{ c.pos_x }}, y: {{ c.pos_y }} },
+            {% endfor %}
+        };
+        const rotaAtiva = {{ rota_nos | tojson }};
+        const marker = document.getElementById("roboMarker");
+
+        if (rotaAtiva && rotaAtiva.length > 1 && marker) {
+            let idx = 0;
+            function animarPasso() {
+                if (idx >= rotaAtiva.length) return;
+                const no = rotaAtiva[idx];
+                if (coords[no]) {
+                    marker.setAttribute("cx", coords[no].x);
+                    marker.setAttribute("cy", coords[no].y);
+                }
+                idx++;
+                if (idx < rotaAtiva.length) {
+                    setTimeout(animarPasso, 420);
+                }
+            }
+            animarPasso();
+        }
+    </script>
+</body>
+</html>

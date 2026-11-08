@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NavBot 2050 — Login do Terminal de Navegação</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #04070d;
+            --bg-card: #0a101d;
+            --bg-input: #060a12;
+            --border-blue: #172542;
+            --primary-blue: #2563eb;
+            --electric-blue: #38bdf8;
+            --text-main: #f1f5f9;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.16), transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.10), transparent 40%),
+                linear-gradient(rgba(23, 37, 66, 0.22) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(23, 37, 66, 0.22) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+        }
+        .login-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-blue);
+            border-radius: 18px;
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            overflow: hidden;
+            box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(56, 189, 248, 0.08);
+        }
+        @media (max-width: 780px) {
+            .login-container { grid-template-columns: 1fr; }
+            .hero-pane { display: none; }
+        }
+        .hero-pane {
+            background: linear-gradient(160deg, #070d19 0%, #0b1730 100%);
+            border-right: 1px solid var(--border-blue);
+            padding: 42px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sys-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: rgba(37, 99, 235, 0.18);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--electric-blue);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            width: fit-content;
+        }
+        .hero-pane h2 {
+            font-size: 27px;
+            line-height: 1.25;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        .hero-pane p {
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 24px;
+        }
+        .spec-card {
+            background: rgba(4, 7, 13, 0.65);
+            border: 1px solid var(--border-blue);
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .spec-card span {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .spec-card strong {
+            font-size: 13px;
+            color: var(--electric-blue);
+            margin-top: 3px;
+            display: block;
+        }
+        .form-pane {
+            padding: 42px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .form-pane h1 {
+            font-size: 23px;
+            margin-bottom: 6px;
+        }
+        .form-pane .sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        .alert-erro {
+            background: rgba(239, 68, 68, 0.14);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-blue);
+            background: var(--bg-input);
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--electric-blue);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(90deg, #1d4ed8, #2563eb);
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+        }
+        .btn-login:hover {
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+        }
+        .quick-box {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border-blue);
+        }
+        .quick-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        .quick-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .q-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-blue);
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: #cbd5e1;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            text-align: left;
+        }
+        .q-btn:hover {
+            border-color: var(--electric-blue);
+            background: rgba(37, 99, 235, 0.12);
+        }
+        .q-btn strong {
+            display: block;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="hero-pane">
+            <div class="sys-tag">NAVBOT R-2050 // PATHFINDING OS</div>
+            <div>
+                <h2>Simulador de Navegação em Grafo &amp; Missões Domésticas</h2>
+                <p>Planejamento autônomo de rotas na planta residencial utilizando o algoritmo de Dijkstra, Fila de Prioridade de Missões e Pilha LIFO de retorno.</p>
+                <div class="specs-grid">
+                    <div class="spec-card">
+                        <span>ALGORITMO DE ROTA</span>
+                        <strong>Dijkstra Shortest Path</strong>
+                    </div>
+                    <div class="spec-card">
+                        <span>ESTRUTURAS</span>
+                        <strong>Grafo + Fila + Pilha</strong>
+                    </div>
+                    <div class="spec-card">
+                        <span>ORIENTAÇÃO OBJETOS</span>
+                        <strong>4 Classes Polimórficas</strong>
+                    </div>
+                    <div class="spec-card">
+                        <span>PERSISTÊNCIA</span>
+                        <strong>SQLite Relacional</strong>
+                    </div>
+                </div>
+            </div>
+            <div style="font-size: 12px; color: #475569; font-family: 'JetBrains Mono', monospace;">
+                CIÊNCIA DA COMPUTAÇÃO · 4º SEMESTRE · EXPOTECH 2026.2
+            </div>
+        </div>
+
+        <div class="form-pane">
+            <h1>Autenticação do Operador</h1>
+            <p class="sub">Entre com sua credencial para controlar o robô na planta da casa</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert-erro">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('login') }}" id="formAuth">
+                <label>Usuário</label>
+                <input type="text" id="inUser" name="username" required placeholder="admin ou convidado">
+
+                <label>Senha</label>
+                <input type="password" id="inPass" name="senha" required placeholder="••••">
+
+                <button type="submit" class="btn-login">Iniciar Terminal de Navegação</button>
+            </form>
+
+            <div class="quick-box">
+                <div class="quick-title">Acesso em 1 clique para demonstração:</div>
+                <div class="quick-grid">
+                    <button type="button" class="q-btn" onclick="acessoRapido('admin','1234')">
+                        <strong>Perfil Administrador</strong>
+                        <span>admin / 1234 (Acesso Total)</span>
+                    </button>
+                    <button type="button" class="q-btn" onclick="acessoRapido('convidado','1234')">
+                        <strong>Perfil Visitante</strong>
+                        <span>convidado / 1234 (Restrito)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function acessoRapido(u, p) {
+            document.getElementById('inUser').value = u;
+            document.getElementById('inPass').value = p;
+            document.getElementById('formAuth').submit();
+        }
+    </script>
+</body>
+</html>
