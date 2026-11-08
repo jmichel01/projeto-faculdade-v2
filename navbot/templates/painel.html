@@ -3,483 +3,478 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NavBot 2050 — Painel de Navegação na Planta da Casa</title>
+    <title>NavBot 2050 — Painel de Navegação</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-body: #090c12;
-            --bg-card: #111622;
-            --bg-item: #171f30;
-            --border: #25324a;
-            --blue-main: #2563eb;
-            --blue-hover: #3b82f6;
-            --blue-bright: #38bdf8;
-            --green: #10b981;
-            --red: #ef4444;
-            --amber: #f59e0b;
-            --text-white: #ffffff;
-            --text-gray: #cbd5e1;
-            --text-dim: #94a3b8;
+            --bg-black: #050505;
+            --bg-panel: #0d0d0d;
+            --bg-surface: #141414;
+            --bg-hover: #1b1b1b;
+            --border: #222222;
+            --border-light: #2e2e2e;
+            --blue: #2563eb;
+            --blue-hover: #1d4ed8;
+            --blue-light: #3b82f6;
+            --blue-tint: rgba(37, 99, 235, 0.14);
+            --text-primary: #f5f5f5;
+            --text-secondary: #a3a3a3;
+            --text-muted: #6e6e6e;
+            --red: #dc2626;
+            --red-tint: rgba(220, 38, 38, 0.14);
+            --green: #16a34a;
+            --amber: #d97706;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-white);
-            padding-bottom: 60px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-black);
+            color: var(--text-primary);
+            padding-bottom: 64px;
+            -webkit-font-smoothing: antialiased;
         }
-        .topbar {
-            background: #0d121d;
+        .navbar {
+            background: #080808;
             border-bottom: 1px solid var(--border);
-            padding: 14px 26px;
+            padding: 14px 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 14px;
-            position: sticky;
-            top: 0;
-            z-index: 40;
+            gap: 16px;
         }
-        .brand {
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .nav-mark {
+            width: 10px;
+            height: 28px;
+            background: var(--blue);
+            border-radius: 2px;
+        }
+        .nav-left h1 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .nav-left span {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .nav-right {
             display: flex;
             align-items: center;
             gap: 12px;
+            font-size: 13px;
         }
-        .brand-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #2563eb, #0ea5e9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+        .badge-role {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: var(--blue-tint);
+            border: 1px solid rgba(37, 99, 235, 0.4);
+            color: #60a5fa;
+            text-transform: uppercase;
         }
-        .brand h1 {
-            font-size: 17px;
-            font-weight: 800;
-        }
-        .brand span {
-            display: block;
-            font-size: 12px;
-            color: var(--text-dim);
-        }
-        .user-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .profile-pill {
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            background: rgba(37, 99, 235, 0.2);
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            color: var(--blue-bright);
-        }
-        .btn-top {
+        .btn-outline {
             text-decoration: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-item);
-            color: #fff;
+            padding: 7px 13px;
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-surface);
+            color: var(--text-primary);
             font-size: 12.5px;
+            font-weight: 500;
+        }
+        .btn-outline:hover {
+            border-color: var(--blue);
+        }
+        .page {
+            max-width: 1240px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+        .guide-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--blue);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+        }
+        .guide-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .guide-top h2 {
+            font-size: 15px;
             font-weight: 600;
+            color: #ffffff;
         }
-        .btn-top:hover {
-            border-color: var(--blue-bright);
+        .guide-top span {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
-        .container {
-            max-width: 1260px;
-            margin: 22px auto;
-            padding: 0 20px;
-        }
-        .how-to-bar {
-            background: linear-gradient(90deg, rgba(29, 78, 216, 0.18), rgba(14, 165, 233, 0.10));
-            border: 1px solid rgba(56, 189, 248, 0.35);
-            border-radius: 14px;
-            padding: 14px 18px;
-            margin-bottom: 18px;
+        .guide-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 14px;
+            gap: 16px;
         }
-        .how-step {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            font-size: 13px;
-            line-height: 1.45;
-            color: var(--text-gray);
-        }
-        .how-num {
-            width: 24px;
-            height: 24px;
-            border-radius: 7px;
-            background: var(--blue-main);
-            color: #fff;
-            font-weight: 800;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-        .how-step strong {
-            color: #fff;
-            display: block;
-            margin-bottom: 2px;
-        }
-        .flash-banner {
-            padding: 14px 18px;
-            border-radius: 12px;
-            margin-bottom: 18px;
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .flash-ok {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.5);
-            color: #a7f3d0;
-        }
-        .flash-err {
-            background: rgba(239, 68, 68, 0.18);
-            border: 1px solid rgba(239, 68, 68, 0.55);
-            color: #fecaca;
-        }
-        .status-strip {
-            display: grid;
-            grid-template-columns: 1.2fr 1.2fr 1fr auto;
-            gap: 14px;
-            margin-bottom: 20px;
-            align-items: stretch;
-        }
-        @media (max-width: 980px) {
-            .status-strip { grid-template-columns: 1fr 1fr; }
-        }
-        @media (max-width: 620px) {
-            .status-strip { grid-template-columns: 1fr; }
-        }
-        .stat-box {
-            background: var(--bg-card);
+        .guide-card {
+            background: var(--bg-surface);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 15px 18px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            border-radius: 6px;
+            padding: 14px 16px;
         }
-        .stat-label {
-            font-size: 11.5px;
-            color: var(--text-dim);
+        .guide-step-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #60a5fa;
+            margin-bottom: 6px;
+            display: block;
             font-weight: 600;
-            text-transform: uppercase;
+        }
+        .guide-card strong {
+            display: block;
+            font-size: 13.5px;
+            color: #ffffff;
             margin-bottom: 5px;
         }
-        .stat-value {
-            font-size: 18px;
-            font-weight: 800;
-            color: #fff;
+        .guide-card p {
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: var(--text-secondary);
         }
-        .stat-sub {
+        .notice {
+            padding: 13px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            font-weight: 500;
+        }
+        .notice-ok {
+            background: var(--blue-tint);
+            border: 1px solid rgba(37, 99, 235, 0.45);
+            color: #bfdbfe;
+        }
+        .notice-err {
+            background: var(--red-tint);
+            border: 1px solid rgba(220, 38, 38, 0.45);
+            color: #fecaca;
+        }
+        .telemetry-bar {
+            display: grid;
+            grid-template-columns: 1.1fr 1.3fr 0.9fr auto;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 980px) {
+            .telemetry-bar { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 600px) {
+            .telemetry-bar { grid-template-columns: 1fr; }
+        }
+        .metric-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 18px;
+        }
+        .metric-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            display: block;
+        }
+        .metric-value {
+            font-size: 17px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .metric-sub {
             font-size: 12px;
-            color: var(--blue-bright);
-            margin-top: 3px;
+            color: var(--text-muted);
+            margin-top: 4px;
             font-family: 'JetBrains Mono', monospace;
         }
-        .battery-bar {
+        .progress-track {
             width: 100%;
-            height: 8px;
-            background: #090c12;
-            border-radius: 99px;
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 3px;
             overflow: hidden;
             margin-top: 8px;
-            border: 1px solid var(--border);
         }
-        .battery-fill {
+        .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #2563eb, #38bdf8);
-            border-radius: 99px;
+            background: var(--blue);
         }
-        .quick-actions-box {
-            background: var(--bg-card);
+        .actions-box {
+            background: var(--bg-panel);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 14px;
+            border-radius: 8px;
+            padding: 16px;
             display: flex;
-            gap: 10px;
             align-items: center;
+            gap: 10px;
             flex-wrap: wrap;
         }
         .btn {
-            padding: 10px 15px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--bg-item);
-            color: #fff;
+            padding: 9px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-surface);
+            color: var(--text-primary);
             font-family: inherit;
-            font-size: 13px;
-            font-weight: 700;
+            font-size: 12.5px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.15s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            transition: border-color 0.15s, background 0.15s;
         }
         .btn:hover {
-            border-color: var(--blue-bright);
-            background: #1f2a40;
+            border-color: var(--blue-light);
+            background: var(--bg-hover);
         }
-        .btn-primary {
-            background: var(--blue-main);
-            border-color: #3b82f6;
-            color: #fff;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        .btn-blue {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: #ffffff;
+            font-weight: 600;
         }
-        .btn-primary:hover {
+        .btn-blue:hover {
             background: var(--blue-hover);
+            border-color: var(--blue-hover);
         }
-        .btn-red {
-            background: rgba(239, 68, 68, 0.16);
-            border-color: rgba(239, 68, 68, 0.45);
-            color: #fca5a5;
+        .btn-danger {
+            background: transparent;
+            border-color: rgba(220, 38, 38, 0.45);
+            color: #f87171;
         }
-        .btn-red:hover {
-            background: rgba(239, 68, 68, 0.28);
-            border-color: #ef4444;
+        .btn-danger:hover {
+            background: var(--red-tint);
+            border-color: var(--red);
         }
-        .btn-green {
-            background: rgba(16, 185, 129, 0.16);
-            border-color: rgba(16, 185, 129, 0.45);
-            color: #6ee7b7;
-        }
-        .workspace-grid {
+        .main-columns {
             display: grid;
             grid-template-columns: 1.35fr 0.65fr;
             gap: 20px;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
         @media (max-width: 1020px) {
-            .workspace-grid { grid-template-columns: 1fr; }
+            .main-columns { grid-template-columns: 1fr; }
         }
-        .card {
-            background: var(--bg-card);
+        .panel {
+            background: var(--bg-panel);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 8px;
             padding: 20px;
         }
-        .card-header {
+        .panel-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 14px;
             padding-bottom: 12px;
             border-bottom: 1px solid var(--border);
         }
-        .card-header h2 {
-            font-size: 16.5px;
-            font-weight: 800;
+        .panel-header h2 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
         }
-        .card-header p {
+        .panel-header p {
             font-size: 12.5px;
-            color: var(--text-dim);
-            margin-top: 2px;
+            color: var(--text-secondary);
+            margin-top: 3px;
         }
-        .legend-row {
+        .legend-bar {
             display: flex;
-            gap: 14px;
+            gap: 18px;
             flex-wrap: wrap;
             font-size: 12px;
-            color: var(--text-gray);
+            color: var(--text-secondary);
             margin-bottom: 12px;
         }
-        .legend-item {
+        .legend-entry {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 7px;
         }
-        .dot {
-            width: 11px;
-            height: 11px;
-            border-radius: 3px;
+        .swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
             display: inline-block;
         }
-        .floorplan-wrap {
-            background: #0a0f18;
-            border: 2px solid #1e293b;
-            border-radius: 14px;
+        .map-frame {
+            background: #080808;
+            border: 1px solid var(--border);
+            border-radius: 6px;
             overflow: hidden;
-            position: relative;
+            background-image:
+                linear-gradient(#121212 1px, transparent 1px),
+                linear-gradient(90deg, #121212 1px, transparent 1px);
+            background-size: 28px 28px;
         }
-        svg.house-svg {
+        svg.floorplan {
             width: 100%;
-            height: 430px;
+            height: 420px;
             display: block;
         }
-        .corridor-line {
-            stroke: #26354d;
-            stroke-width: 4;
-        }
-        .corridor-active {
-            stroke: #38bdf8;
-            stroke-width: 6;
-            stroke-dasharray: 10 6;
-            animation: flowDash 1s linear infinite;
-        }
-        @keyframes flowDash {
-            to { stroke-dashoffset: -32; }
-        }
-        .dist-badge {
-            fill: #0f172a;
-            stroke: #334155;
-            stroke-width: 1;
-        }
-        .dist-text {
-            fill: #94a3b8;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10.5px;
-            font-weight: 700;
-        }
-        .room-group {
-            cursor: pointer;
-        }
-        .room-box {
-            fill: #131c2e;
-            stroke: #3b82f6;
-            stroke-width: 2.2;
-            rx: 12;
-            transition: all 0.15s;
-        }
-        .room-group:hover .room-box {
-            fill: #1b2842;
-            stroke: #38bdf8;
+        .corridor {
+            stroke: #262626;
             stroke-width: 3;
         }
-        .room-box-active {
-            fill: #1d4ed8 !important;
-            stroke: #38bdf8 !important;
-            stroke-width: 3.5 !important;
+        .corridor-active {
+            stroke: #2563eb;
+            stroke-width: 5;
+            stroke-dasharray: 8 5;
+            animation: dashAnim 1s linear infinite;
         }
-        .room-box-blocked {
-            fill: #3b0d0d !important;
-            stroke: #ef4444 !important;
-            stroke-width: 2.8 !important;
+        @keyframes dashAnim {
+            to { stroke-dashoffset: -26; }
         }
-        .room-box-restricted {
-            stroke: #f59e0b;
+        .weight-box {
+            fill: #0b0b0b;
+            stroke: #262626;
+            stroke-width: 1;
         }
-        .room-code-txt {
-            fill: #38bdf8;
+        .weight-label {
+            fill: #8c8c8c;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 700;
-            text-anchor: middle;
-            pointer-events: none;
+            font-size: 10px;
         }
-        .room-box-active + .room-code-txt {
-            fill: #ffffff;
+        .room-node {
+            cursor: pointer;
         }
-        .room-name-txt {
-            fill: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-            text-anchor: middle;
-            pointer-events: none;
+        .room-rect {
+            fill: #121212;
+            stroke: #333333;
+            stroke-width: 1.5;
+            rx: 6;
+            transition: stroke 0.15s, fill 0.15s;
         }
-        .room-status-txt {
-            fill: #94a3b8;
+        .room-node:hover .room-rect {
+            fill: #181818;
+            stroke: #2563eb;
+        }
+        .room-rect-current {
+            fill: rgba(37, 99, 235, 0.22) !important;
+            stroke: #2563eb !important;
+            stroke-width: 2.5 !important;
+        }
+        .room-rect-blocked {
+            fill: rgba(185, 28, 28, 0.18) !important;
+            stroke: #dc2626 !important;
+            stroke-width: 2 !important;
+        }
+        .room-rect-restricted {
+            stroke: #9ca3af;
+            stroke-dasharray: 4 3;
+        }
+        .room-code {
+            fill: #60a5fa;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 10px;
             font-weight: 600;
             text-anchor: middle;
             pointer-events: none;
         }
-        .rooms-list {
+        .room-title {
+            fill: #f5f5f5;
+            font-size: 12px;
+            font-weight: 600;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        .room-sub {
+            fill: #8a8a8a;
+            font-size: 10px;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        .room-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
-        .room-item {
-            background: var(--bg-item);
+        .room-row {
+            background: var(--bg-surface);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px 14px;
+            border-radius: 6px;
+            padding: 11px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 10px;
         }
-        .room-item-active {
-            border-color: var(--blue-bright);
-            background: rgba(37, 99, 235, 0.16);
+        .room-row-current {
+            border-color: var(--blue);
+            background: rgba(37, 99, 235, 0.08);
         }
-        .room-item-blocked {
-            border-color: rgba(239, 68, 68, 0.5);
-            background: rgba(69, 10, 10, 0.35);
+        .room-row-blocked {
+            border-color: rgba(220, 38, 38, 0.5);
         }
-        .room-meta strong {
+        .room-info strong {
             display: block;
-            font-size: 13.5px;
-            color: #fff;
-            margin-bottom: 3px;
-        }
-        .room-tags {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 2px;
         }
-        .tag-free { color: #34d399; }
-        .tag-closed { color: #f87171; }
-        .tag-admin { color: #fbbf24; }
-        .bottom-grid {
+        .room-info span {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+        }
+        .bottom-columns {
             display: grid;
             grid-template-columns: 1.2fr 0.8fr;
             gap: 20px;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
         @media (max-width: 980px) {
-            .bottom-grid { grid-template-columns: 1fr; }
+            .bottom-columns { grid-template-columns: 1fr; }
         }
-        .task-card {
-            background: var(--bg-item);
+        .mission-row {
+            background: var(--bg-surface);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
+            border-radius: 6px;
+            padding: 13px 15px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 12px;
         }
-        .prio-badge {
-            padding: 4px 9px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 800;
+        .prio-tag {
             font-family: 'JetBrains Mono', monospace;
-            background: rgba(37, 99, 235, 0.25);
-            color: var(--blue-bright);
-            border: 1px solid rgba(56, 189, 248, 0.35);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: var(--blue-tint);
+            color: #60a5fa;
+            border: 1px solid rgba(37, 99, 235, 0.35);
         }
-        .form-grid {
+        .form-stack {
             display: grid;
             gap: 12px;
         }
-        .two-cols {
+        .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
@@ -487,65 +482,63 @@
         label {
             display: block;
             font-size: 12px;
-            font-weight: 600;
-            color: var(--text-gray);
+            font-weight: 500;
+            color: var(--text-secondary);
             margin-bottom: 5px;
         }
         input[type="text"], select {
             width: 100%;
-            padding: 10px 12px;
-            border-radius: 9px;
-            border: 1px solid var(--border);
-            background: #0b0f17;
-            color: #fff;
+            padding: 9px 11px;
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-black);
+            color: var(--text-primary);
             font-family: inherit;
-            font-size: 13.5px;
+            font-size: 13px;
         }
         input:focus, select:focus {
             outline: none;
-            border-color: var(--blue-bright);
+            border-color: var(--blue);
         }
     </style>
 </head>
 <body>
-    <header class="topbar">
-        <div class="brand">
-            <div class="brand-icon">🤖</div>
+    <header class="navbar">
+        <div class="nav-left">
+            <div class="nav-mark"></div>
             <div>
-                <h1>NavBot 2050 — Simulador do Robô Doméstico</h1>
-                <span>Planta da Casa em Grafo · Menor Caminho (Dijkstra) · Fila de Prioridade · Pilha (Desfazer)</span>
+                <h1>NavBot 2050 — Controle de Navegação Residencial</h1>
+                <span>Simulador de rotas em Grafo (Algoritmo de Dijkstra), Fila de Prioridade e Pilha de Retorno</span>
             </div>
         </div>
-        <div class="user-controls">
-            <span>Logado como: <strong>{{ usuario.nome_exibicao }}</strong></span>
-            <span class="profile-pill">
-                {{ '👑 Administrador' if usuario.perfil == 'administrador' else '👤 Visitante (Restrito)' }}
-            </span>
-            <a class="btn-top" href="{{ url_for('logout') }}">Trocar de Conta / Sair</a>
+        <div class="nav-right">
+            <span style="color: var(--text-secondary);">Operador: <strong style="color: #fff;">{{ usuario.nome_exibicao }}</strong></span>
+            <span class="badge-role">{{ usuario.perfil }}</span>
+            <a class="btn-outline" href="{{ url_for('logout') }}">Trocar perfil</a>
         </div>
     </header>
 
-    <main class="container">
-        <section class="how-to-bar">
-            <div class="how-step">
-                <div class="how-num">1</div>
-                <div>
-                    <strong>Clique em um Cômodo na Planta</strong>
-                    Clique direto em qualquer cômodo do mapa abaixo para o robô calcular a rota mais curta e ir até lá.
-                </div>
+    <main class="page">
+        <section class="guide-panel">
+            <div class="guide-top">
+                <h2>Como funciona este simulador e como testar</h2>
+                <span>Siga qualquer um dos passos abaixo para ver os algoritmos em funcionamento</span>
             </div>
-            <div class="how-step">
-                <div class="how-num">2</div>
-                <div>
-                    <strong>Teste Fechar um Cômodo (Obstáculo)</strong>
-                    Na lista à direita, clique em <em>"Fechar"</em> (ex: na Sala) e mande o robô ir ao Jardim para vê-lo desviar sozinho!
+            <div class="guide-grid">
+                <div class="guide-card">
+                    <span class="guide-step-tag">PASSO 01 · MENOR CAMINHO (DIJKSTRA)</span>
+                    <strong>Clique em um cômodo na planta</strong>
+                    <p>Clique sobre qualquer cômodo no mapa abaixo (ou no botão <em>Enviar robô</em> na lista ao lado). O algoritmo de Dijkstra calcula qual sequência de corredores tem a menor distância em metros e leva o robô até lá.</p>
                 </div>
-            </div>
-            <div class="how-step">
-                <div class="how-num">3</div>
-                <div>
-                    <strong>Execute Tarefas ou Desfaça Passos</strong>
-                    Use o botão <em>"Executar Tarefa Mais Urgente"</em> na Fila ou clique em <em>"Desfazer Movimento"</em> no topo.
+                <div class="guide-card">
+                    <span class="guide-step-tag">PASSO 02 · DESVIO DE OBSTÁCULOS</span>
+                    <strong>Tranque um cômodo e recalcule</strong>
+                    <p>Na coluna da direita, clique em <em>Trancar</em> na <strong>Sala de Estar</strong> e depois mande o robô ir ao <strong>Jardim</strong>. Como a Sala estará fechada, o robô vai calcular sozinho um desvio passando pela Cozinha.</p>
+                </div>
+                <div class="guide-card">
+                    <span class="guide-step-tag">PASSO 03 · FILA E PILHA DE MEMÓRIA</span>
+                    <strong>Execute tarefas por urgência ou desfaça</strong>
+                    <p>Mais abaixo, clique em <em>Executar próxima da fila</em> para o robô realizar a tarefa de maior prioridade (P5 até P1). Para fazer o robô voltar ao cômodo anterior, use o botão <em>Desfazer último trajeto</em>.</p>
                 </div>
             </div>
         </section>
@@ -553,46 +546,45 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
-              <div class="flash-banner {{ 'flash-err' if category == 'erro' else 'flash-ok' }}">
-                <span>{{ '⚠️' if category == 'erro' else '✅' }}</span>
-                <span>{{ message }}</span>
+              <div class="notice {{ 'notice-err' if category == 'erro' else 'notice-ok' }}">
+                {{ message }}
               </div>
             {% endfor %}
           {% endif %}
         {% endwith %}
 
-        <section class="status-strip">
-            <div class="stat-box">
-                <span class="stat-label">📍 Onde o Robô está agora</span>
-                <div class="stat-value">{{ mapa_comodos[robo.no_atual].nome }} ({{ robo.no_atual }})</div>
-                <span class="stat-sub">Distância total percorrida: {{ robo.distancia_acumulada_m }} metros</span>
+        <section class="telemetry-bar">
+            <div class="metric-box">
+                <span class="metric-label">Localização atual do robô</span>
+                <div class="metric-value">{{ mapa_comodos[robo.no_atual].nome }} ({{ robo.no_atual }})</div>
+                <div class="metric-sub">Total percorrido: {{ robo.distancia_acumulada_m }} m</div>
             </div>
 
-            <div class="stat-box">
-                <span class="stat-label">🧭 Último Caminho Calculado (Dijkstra)</span>
-                <div class="stat-value" style="font-size: 15.5px; color: var(--blue-bright); font-family: 'JetBrains Mono', monospace;">
+            <div class="metric-box">
+                <span class="metric-label">Última rota calculada (Dijkstra)</span>
+                <div class="metric-value" style="font-family: 'JetBrains Mono', monospace; font-size: 14.5px; color: #60a5fa;">
                     {{ robo.ultima_rota }}
                 </div>
-                <span class="stat-sub">Passos salvos para desfazer (Pilha): {{ total_pilha }}</span>
+                <div class="metric-sub">Histórico na Pilha para desfazer: {{ total_pilha }} passo(s)</div>
             </div>
 
-            <div class="stat-box">
-                <span class="stat-label">🔋 Bateria do Robô: {{ robo.bateria_pct }}%</span>
-                <div class="battery-bar">
-                    <div class="battery-fill" style="width: {{ robo.bateria_pct }}%;"></div>
+            <div class="metric-box">
+                <span class="metric-label">Nível de bateria ({{ robo.bateria_pct }}%)</span>
+                <div class="progress-track">
+                    <div class="progress-fill" style="width: {{ robo.bateria_pct }}%;"></div>
                 </div>
-                <span class="stat-sub">Tarefas pendentes na Fila: {{ fila_atual|length }}</span>
+                <div class="metric-sub">Tarefas aguardando na Fila: {{ fila_atual|length }}</div>
             </div>
 
-            <div class="quick-actions-box">
+            <div class="actions-box">
                 <form method="POST" action="{{ url_for('desfazer_passo_pilha') }}">
-                    <button type="submit" class="btn" title="Desempilha o último passo e volta ao cômodo anterior">
-                        ↩ Desfazer Movimento ({{ total_pilha }})
+                    <button type="submit" class="btn">
+                        Desfazer último trajeto ({{ total_pilha }})
                     </button>
                 </form>
                 <form method="POST" action="{{ url_for('recarregar_base') }}">
-                    <button type="submit" class="btn btn-primary">
-                        ⚡ Voltar à Base (100%)
+                    <button type="submit" class="btn btn-blue">
+                        Recarregar na Base (100%)
                     </button>
                 </form>
             </div>
@@ -602,24 +594,24 @@
             <input type="hidden" name="destino" id="inputDestinoMapa" value="SALA">
         </form>
 
-        <section class="workspace-grid">
-            <div class="card">
-                <div class="card-header">
+        <section class="main-columns">
+            <div class="panel">
+                <div class="panel-header">
                     <div>
-                        <h2>🏠 Planta da Casa (Clique em qualquer cômodo para enviar o robô)</h2>
-                        <p>As linhas mostram os corredores com a distância em metros. A linha tracejada azul é a rota calculada.</p>
+                        <h2>Planta da Residência (Grafo de Cômodos e Corredores)</h2>
+                        <p>Clique diretamente em qualquer cômodo do mapa para deslocar o robô pelo caminho mais curto.</p>
                     </div>
                 </div>
 
-                <div class="legend-row">
-                    <span class="legend-item"><span class="dot" style="background:#1d4ed8; border:1px solid #38bdf8;"></span> Cômodo Atual do Robô</span>
-                    <span class="legend-item"><span class="dot" style="background:#131c2e; border:1px solid #3b82f6;"></span> Cômodo Livre (Clique para ir)</span>
-                    <span class="legend-item"><span class="dot" style="background:#3b0d0d; border:1px solid #ef4444;"></span> Cômodo Fechado (Obstáculo)</span>
-                    <span class="legend-item"><span class="dot" style="background:#131c2e; border:1px solid #f59e0b;"></span> Área Restrita (Só Admin)</span>
+                <div class="legend-bar">
+                    <span class="legend-entry"><span class="swatch" style="background: rgba(37,99,235,0.4); border: 1.5px solid #2563eb;"></span> Posição atual do robô</span>
+                    <span class="legend-entry"><span class="swatch" style="background: #121212; border: 1.5px solid #333;"></span> Cômodo livre</span>
+                    <span class="legend-entry"><span class="swatch" style="background: rgba(185,28,28,0.3); border: 1.5px solid #dc2626;"></span> Cômodo trancado (obstáculo)</span>
+                    <span class="legend-entry"><span class="swatch" style="background: #121212; border: 1.5px dashed #9ca3af;"></span> Restrito ao Administrador</span>
                 </div>
 
-                <div class="floorplan-wrap">
-                    <svg class="house-svg" viewBox="0 0 700 410">
+                <div class="map-frame">
+                    <svg class="floorplan" viewBox="0 0 700 410">
                         {% for a in arestas %}
                           {% set c1 = mapa_comodos[a.origem] %}
                           {% set c2 = mapa_comodos[a.destino] %}
@@ -634,82 +626,78 @@
                           <line
                               x1="{{ c1.pos_x }}" y1="{{ c1.pos_y }}"
                               x2="{{ c2.pos_x }}" y2="{{ c2.pos_y }}"
-                              class="corridor-line {{ 'corridor-active' if ns.ativo else '' }}"
+                              class="corridor {{ 'corridor-active' if ns.ativo else '' }}"
                           />
-                          <rect x="{{ mx - 20 }}" y="{{ my - 10 }}" width="40" height="18" rx="5" class="dist-badge" />
-                          <text x="{{ mx }}" y="{{ my + 3 }}" text-anchor="middle" class="dist-text">{{ a.metros }}m</text>
+                          <rect x="{{ mx - 20 }}" y="{{ my - 9 }}" width="40" height="17" rx="3" class="weight-box" />
+                          <text x="{{ mx }}" y="{{ my + 3 }}" text-anchor="middle" class="weight-label">{{ a.metros }}m</text>
                         {% endfor %}
 
                         {% for c in comodos %}
-                          <g class="room-group" onclick="irParaComodo('{{ c.codigo }}')">
+                          <g class="room-node" onclick="irParaComodo('{{ c.codigo }}')">
                             <rect
-                                x="{{ c.pos_x - 62 }}" y="{{ c.pos_y - 28 }}"
-                                width="124" height="56"
-                                class="room-box
-                                  {{ 'room-box-active' if robo.no_atual == c.codigo else '' }}
-                                  {{ 'room-box-blocked' if c.bloqueado else '' }}
-                                  {{ 'room-box-restricted' if c.restrito_admin and not c.bloqueado else '' }}"
+                                x="{{ c.pos_x - 62 }}" y="{{ c.pos_y - 27 }}"
+                                width="124" height="54"
+                                class="room-rect
+                                  {{ 'room-rect-current' if robo.no_atual == c.codigo else '' }}
+                                  {{ 'room-rect-blocked' if c.bloqueado else '' }}
+                                  {{ 'room-rect-restricted' if c.restrito_admin and not c.bloqueado else '' }}"
                             />
-                            <text x="{{ c.pos_x }}" y="{{ c.pos_y - 9 }}" class="room-code-txt">
-                                {{ '🤖 ' if robo.no_atual == c.codigo else '' }}{{ c.codigo }}{{ ' 🔒' if c.restrito_admin else '' }}
+                            <text x="{{ c.pos_x }}" y="{{ c.pos_y - 9 }}" class="room-code">
+                                {{ c.codigo }}{{ ' · RESTRITO' if c.restrito_admin else '' }}
                             </text>
-                            <text x="{{ c.pos_x }}" y="{{ c.pos_y + 7 }}" class="room-name-txt">
+                            <text x="{{ c.pos_x }}" y="{{ c.pos_y + 6 }}" class="room-title">
                                 {{ c.nome[:18] }}
                             </text>
-                            <text x="{{ c.pos_x }}" y="{{ c.pos_y + 21 }}" class="room-status-txt">
-                                {{ '⛔ FECHADO' if c.bloqueado else ('📍 ROBÔ AQUI' if robo.no_atual == c.codigo else 'Clique para ir') }}
+                            <text x="{{ c.pos_x }}" y="{{ c.pos_y + 20 }}" class="room-sub">
+                                {{ 'TRANCADO' if c.bloqueado else ('ROBÔ AQUI' if robo.no_atual == c.codigo else 'Clique para enviar') }}
                             </text>
                           </g>
                         {% endfor %}
 
-                        <circle id="roboMarker" cx="{{ mapa_comodos[robo.no_atual].pos_x }}" cy="{{ mapa_comodos[robo.no_atual].pos_y - 28 }}" r="9" fill="#38bdf8" stroke="#ffffff" stroke-width="2">
-                            <animate attributeName="r" values="7;11;7" dur="1.2s" repeatCount="indefinite" />
-                        </circle>
+                        <circle id="roboMarker" cx="{{ mapa_comodos[robo.no_atual].pos_x }}" cy="{{ mapa_comodos[robo.no_atual].pos_y - 27 }}" r="6" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
                     </svg>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
+            <div class="panel">
+                <div class="panel-header">
                     <div>
-                        <h2>🚪 Cômodos &amp; Portas da Casa</h2>
-                        <p>Envie o robô ou feche um cômodo para testar o desvio de rota.</p>
+                        <h2>Controle de Cômodos e Passagens</h2>
+                        <p>Envie o robô para um cômodo ou tranque a passagem para testar desvios.</p>
                     </div>
                 </div>
 
-                <div class="rooms-list">
+                <div class="room-list">
                     {% for c in comodos %}
-                    <div class="room-item {{ 'room-item-active' if robo.no_atual == c.codigo else '' }} {{ 'room-item-blocked' if c.bloqueado else '' }}">
-                        <div class="room-meta">
+                    <div class="room-row {{ 'room-row-current' if robo.no_atual == c.codigo else '' }} {{ 'room-row-blocked' if c.bloqueado else '' }}">
+                        <div class="room-info">
                             <strong>{{ c.nome }} ({{ c.codigo }})</strong>
-                            <div class="room-tags">
+                            <span>
                                 {% if robo.no_atual == c.codigo %}
-                                  <span style="color:var(--blue-bright);">🤖 Robô está aqui</span>
+                                  Posição atual do robô
                                 {% elif c.bloqueado %}
-                                  <span class="tag-closed">🔴 Fechado (Obstáculo)</span>
+                                  Passagem trancada (obstáculo ativo)
                                 {% else %}
-                                  <span class="tag-free">🟢 Aberto / Livre</span>
+                                  Passagem livre
                                 {% endif %}
-                                {% if c.restrito_admin %}
-                                  <span class="tag-admin">· 🔒 Só Admin</span>
-                                {% endif %}
-                            </div>
+                                {{ ' · Exige Administrador' if c.restrito_admin else '' }}
+                            </span>
                         </div>
 
                         <div style="display:flex; gap:6px; flex-shrink:0;">
                             {% if robo.no_atual != c.codigo %}
                             <form method="POST" action="{{ url_for('navegar_dijkstra') }}">
                                 <input type="hidden" name="destino" value="{{ c.codigo }}">
-                                <button type="submit" class="btn btn-primary" style="padding: 8px 12px; font-size: 12px;">
-                                    Ir até aqui
+                                <button type="submit" class="btn btn-blue" style="padding: 7px 11px; font-size: 12px;">
+                                    Enviar robô
                                 </button>
                             </form>
                             {% endif %}
 
                             {% if usuario.perfil == 'administrador' and c.codigo != 'BASE' %}
                             <form method="POST" action="{{ url_for('alternar_obstaculo', codigo=c.codigo) }}">
-                                <button type="submit" class="btn {{ 'btn-green' if c.bloqueado else 'btn-red' }}" style="padding: 8px 11px; font-size: 12px;">
-                                    {{ 'Abrir' if c.bloqueado else 'Fechar' }}
+                                <button type="submit" class="btn {{ '' if c.bloqueado else 'btn-danger' }}" style="padding: 7px 10px; font-size: 12px;">
+                                    {{ 'Liberar' if c.bloqueado else 'Trancar' }}
                                 </button>
                             </form>
                             {% endif %}
@@ -720,48 +708,45 @@
             </div>
         </section>
 
-        <section class="bottom-grid">
-            <div class="card">
-                <div class="card-header">
+        <section class="bottom-columns">
+            <div class="panel">
+                <div class="panel-header">
                     <div>
-                        <h2>📋 Fila de Tarefas do Robô (Ordenada por Prioridade)</h2>
-                        <p>As tarefas mais urgentes (Prioridade P5) ficam no topo e são executadas primeiro.</p>
+                        <h2>Fila de Tarefas Agendadas (Ordenada por Prioridade)</h2>
+                        <p>O robô executa sempre a tarefa pendente de maior prioridade (P5 até P1).</p>
                     </div>
                     <form method="POST" action="{{ url_for('executar_proxima_fila') }}">
-                        <button type="submit" class="btn btn-primary">
-                            ▶ Executar Tarefa Mais Urgente Agora ({{ fila_atual|length }} na fila)
+                        <button type="submit" class="btn btn-blue">
+                            Executar próxima da fila ({{ fila_atual|length }})
                         </button>
                     </form>
                 </div>
 
                 {% for m in missoes %}
-                <div class="task-card">
+                <div class="mission-row">
                     <div>
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px; flex-wrap:wrap;">
-                            <span class="prio-badge">Prioridade P{{ m.prioridade }}</span>
-                            <strong style="font-size:14px;">{{ m.titulo }}</strong>
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                            <span class="prio-tag">Prioridade {{ m.prioridade }}</span>
+                            <strong style="font-size:13.5px;">{{ m.titulo }}</strong>
                         </div>
-                        <div style="font-size:12.5px; color:var(--text-dim);">
-                            De <strong>{{ mapa_comodos[m.origem].nome }} ({{ m.origem }})</strong> para <strong>{{ mapa_comodos[m.destino].nome }} ({{ m.destino }})</strong>
+                        <div style="font-size:12px; color:var(--text-secondary);">
+                            Origem: <strong>{{ mapa_comodos[m.origem].nome }}</strong> &rarr; Destino: <strong>{{ mapa_comodos[m.destino].nome }}</strong>
                             · {{ m.descricao_operacao() }}
                             {% if m.rota_calculada %}
-                              <div style="margin-top:4px; color:var(--blue-bright); font-family:'JetBrains Mono', monospace; font-size:12px;">
-                                  ✓ Menor rota feita: {{ m.rota_calculada }} ({{ m.distancia_metros }}m)
+                              <div style="margin-top:3px; color:#60a5fa; font-family:'JetBrains Mono', monospace; font-size:11.5px;">
+                                  Trajeto percorrido: {{ m.rota_calculada }} ({{ m.distancia_metros }}m)
                               </div>
                             {% endif %}
                         </div>
                     </div>
 
-                    <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                        {% if m.status == 'concluida' %}
-                            <span style="color:var(--green); font-size:12px; font-weight:700;">✅ Concluída</span>
-                        {% else %}
-                            <span style="color:var(--amber); font-size:12px; font-weight:700;">⏳ Na Fila</span>
-                        {% endif %}
-
+                    <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+                        <span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:{{ '#4ade80' if m.status == 'concluida' else '#a3a3a3' }};">
+                            {{ 'CONCLUÍDA' if m.status == 'concluida' else 'PENDENTE' }}
+                        </span>
                         {% if usuario.perfil == 'administrador' %}
                         <form method="POST" action="{{ url_for('excluir_missao', id_missao=m.id_missao) }}">
-                            <button type="submit" class="btn btn-red" style="padding:6px 10px;" title="Excluir tarefa">✕</button>
+                            <button type="submit" class="btn btn-danger" style="padding:5px 9px; font-size:11px;">Remover</button>
                         </form>
                         {% endif %}
                     </div>
@@ -769,34 +754,34 @@
                 {% endfor %}
             </div>
 
-            <div class="card">
-                <div class="card-header">
+            <div class="panel">
+                <div class="panel-header">
                     <div>
-                        <h2>➕ Adicionar Nova Tarefa para o Robô</h2>
-                        <p>Cadastre uma missão e ela entrará automaticamente na Fila de Prioridade.</p>
+                        <h2>Cadastrar Nova Tarefa</h2>
+                        <p>Adicione um serviço para o robô. Ele será posicionado na fila conforme a prioridade.</p>
                     </div>
                 </div>
 
-                <form method="POST" action="{{ url_for('nova_missao') }}" class="form-grid">
+                <form method="POST" action="{{ url_for('nova_missao') }}" class="form-stack">
                     <div>
-                        <label>O que o robô deve fazer?</label>
-                        <input type="text" name="titulo" placeholder="Ex: Levar água gelada para a Sala" required>
+                        <label>Descrição da tarefa</label>
+                        <input type="text" name="titulo" placeholder="Ex: Levar encomenda para a Sala" required>
                     </div>
 
-                    <div class="two-cols">
+                    <div class="grid-2">
                         <div>
-                            <label>Tipo de Tarefa (POO)</label>
+                            <label>Categoria (Classe POO)</label>
                             <select name="tipo">
-                                <option value="entrega">📦 Entrega de Item</option>
-                                <option value="limpeza">✨ Limpeza &amp; Higienização</option>
-                                <option value="patrulha">🛡️ Inspeção (Só Admin)</option>
-                                <option value="emergencia">🚨 Emergência (Só Admin)</option>
+                                <option value="entrega">Entrega de carga</option>
+                                <option value="limpeza">Limpeza do ambiente</option>
+                                <option value="patrulha">Vistoria técnica (Admin)</option>
+                                <option value="emergencia">Emergência (Admin)</option>
                             </select>
                         </div>
                         <div>
-                            <label>Urgência / Prioridade</label>
+                            <label>Nível de prioridade</label>
                             <select name="prioridade">
-                                <option value="5">5 — Urgente (Máxima)</option>
+                                <option value="5">5 — Urgente</option>
                                 <option value="4">4 — Alta</option>
                                 <option value="3" selected>3 — Normal</option>
                                 <option value="2">2 — Baixa</option>
@@ -805,9 +790,9 @@
                         </div>
                     </div>
 
-                    <div class="two-cols">
+                    <div class="grid-2">
                         <div>
-                            <label>Sair de qual cômodo?</label>
+                            <label>Cômodo de partida</label>
                             <select name="origem">
                                 {% for c in comodos %}
                                 <option value="{{ c.codigo }}" {{ 'selected' if c.codigo == robo.no_atual else '' }}>{{ c.nome }} ({{ c.codigo }})</option>
@@ -815,7 +800,7 @@
                             </select>
                         </div>
                         <div>
-                            <label>Ir para qual cômodo?</label>
+                            <label>Cômodo de destino</label>
                             <select name="destino">
                                 {% for c in comodos %}
                                 <option value="{{ c.codigo }}" {{ 'selected' if c.codigo == 'SALA' else '' }}>{{ c.nome }} ({{ c.codigo }})</option>
@@ -825,31 +810,31 @@
                     </div>
 
                     <div>
-                        <label>Peso do item em kg (Digite apenas números, ex: 1.5)</label>
+                        <label>Peso da carga em kg (apenas números, ex: 2.0)</label>
                         <input type="text" name="carga_kg" value="1.0" required>
                     </div>
 
-                    <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">
-                        Adicionar Tarefa na Fila
+                    <button type="submit" class="btn btn-blue" style="width:100%; padding:11px;">
+                        Adicionar à fila de tarefas
                     </button>
                 </form>
             </div>
         </section>
 
-        <section class="card">
-            <div class="card-header">
+        <section class="panel">
+            <div class="panel-header">
                 <div>
-                    <h2>📜 Histórico de Movimentos e Segurança (Salvo no Banco SQLite)</h2>
-                    <p>Mostra todas as rotas calculadas pelo robô e bloqueios de segurança.</p>
+                    <h2>Registro de Operações (Salvo em Banco SQLite)</h2>
+                    <p>Histórico das últimas rotas calculadas e verificações de permissão de acesso.</p>
                 </div>
             </div>
             {% for l in logs %}
-            <div class="task-card" style="margin-bottom:8px; padding:11px 14px;">
-                <div style="font-size:13px;">
-                    <strong style="color:var(--blue-bright);">{{ l.usuario }}</strong>
-                    <span style="font-size:11.5px; color:var(--text-dim);">({{ l.perfil }})</span> — {{ l.evento }}
+            <div class="mission-row" style="margin-bottom:6px; padding:10px 14px;">
+                <div style="font-size:12.5px;">
+                    <strong style="color:#60a5fa;">{{ l.usuario }}</strong>
+                    <span style="font-size:11.5px; color:var(--text-muted);">[{{ l.perfil }}]</span> — {{ l.evento }}
                 </div>
-                <span style="font-size:11.5px; color:var(--text-dim); font-family:'JetBrains Mono', monospace;">{{ l.data_hora }}</span>
+                <span style="font-size:11px; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">{{ l.data_hora }}</span>
             </div>
             {% endfor %}
         </section>
@@ -867,7 +852,7 @@
 
         const coords = {
             {% for c in comodos %}
-            "{{ c.codigo }}": { x: {{ c.pos_x }}, y: {{ c.pos_y - 28 }} },
+            "{{ c.codigo }}": { x: {{ c.pos_x }}, y: {{ c.pos_y - 27 }} },
             {% endfor %}
         };
         const rotaAtiva = {{ rota_nos | tojson }};
@@ -884,7 +869,7 @@
                 }
                 idx++;
                 if (idx < rotaAtiva.length) {
-                    setTimeout(animarPasso, 380);
+                    setTimeout(animarPasso, 360);
                 }
             }
             animarPasso();
