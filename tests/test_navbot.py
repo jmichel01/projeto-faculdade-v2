@@ -87,7 +87,7 @@ def test_banco_sqlite_e_fluxo_web_completo(tmp_path: Path):
 
     resp_login = client.post("/login", data={"username": "admin", "senha": "1234"}, follow_redirects=True)
     assert resp_login.status_code == 200
-    assert "CASA INTELIGENTE 2050" in resp_login.get_data(as_text=True)
+    assert "DOMUS OS" in resp_login.get_data(as_text=True)
 
     resp_ar_geral = client.post(
         "/geral/ar",

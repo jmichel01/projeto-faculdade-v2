@@ -3,861 +3,1274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central da Casa Inteligente 2050</title>
+    <title>DOMUS OS 2050 — Central Inteligente</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-canvas: #06080d;
+            --bg-sidebar: rgba(10, 14, 22, 0.92);
+            --bg-card: rgba(16, 22, 34, 0.78);
+            --bg-card-active: rgba(20, 28, 44, 0.9);
+            --bg-input: rgba(8, 11, 18, 0.9);
+            --border-glass: rgba(255, 255, 255, 0.07);
+            --border-active: rgba(56, 189, 248, 0.35);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --cyan: #38bdf8;
+            --cyan-glow: rgba(56, 189, 248, 0.15);
+            --amber: #f59e0b;
+            --amber-glow: rgba(245, 158, 11, 0.15);
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.15);
+            --indigo: #818cf8;
+            --danger: #ef4444;
+        }
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
         body {
-            background-color: #050505;
-            color: #e5e7eb;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.5;
+            background-color: var(--bg-canvas);
+            background-image:
+                radial-gradient(circle at 20% 0%, rgba(14, 165, 233, 0.10) 0%, transparent 50%),
+                radial-gradient(circle at 90% 90%, rgba(99, 102, 241, 0.07) 0%, transparent 50%),
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             min-height: 100vh;
-            padding-bottom: 48px;
-        }
-        .topbar {
-            background-color: #0a0a0a;
-            border-bottom: 1px solid #222222;
-            padding: 14px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 14px;
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .brand-indicator {
-            width: 10px;
-            height: 28px;
-            background-color: #2563eb;
-            border-radius: 2px;
-        }
-        .brand-text h1 {
-            font-size: 17px;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: -0.01em;
-        }
-        .brand-text span {
-            display: block;
-            font-size: 12px;
-            color: #9ca3af;
-        }
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .stat-chip {
-            background-color: #121212;
-            border: 1px solid #262626;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #d1d5db;
-        }
-        .stat-chip strong {
-            color: #60a5fa;
-            font-weight: 700;
-        }
-        .user-badge {
-            background-color: #111827;
-            border: 1px solid #1d4ed8;
-            color: #93c5fd;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .btn-sair {
-            background-color: #171717;
-            border: 1px solid #333333;
-            color: #f87171;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .btn-sair:hover {
-            background-color: #261212;
-            border-color: #dc2626;
-        }
-        .container {
-            max-width: 1320px;
-            margin: 0 auto;
-            padding: 20px 24px;
-        }
-        .flash-box {
-            padding: 12px 16px;
-            border-radius: 4px;
-            margin-bottom: 18px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .flash-sucesso {
-            background-color: #0b192c;
-            border: 1px solid #2563eb;
-            color: #93c5fd;
-        }
-        .flash-erro {
-            background-color: #2a0a0a;
-            border: 1px solid #dc2626;
-            color: #fca5a5;
-        }
-        .flash-aviso {
-            background-color: #241a08;
-            border: 1px solid #d97706;
-            color: #fcd34d;
-        }
-        .guia-rapido {
-            background-color: #0d0d0d;
-            border: 1px solid #222222;
-            border-left: 4px solid #2563eb;
-            border-radius: 5px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
+            grid-template-columns: 280px 1fr;
+            line-height: 1.5;
         }
-        @media (max-width: 900px) {
-            .guia-rapido {
+        @media (max-width: 1024px) {
+            body {
                 grid-template-columns: 1fr;
             }
         }
-        .guia-passo {
-            font-size: 12px;
-            color: #9ca3af;
+        /* SIDEBAR */
+        .sidebar {
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-glass);
+            padding: 24px 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
         }
-        .guia-passo strong {
-            display: block;
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: relative;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-glass);
+            }
+        }
+        .brand-box {
+            padding: 6px 10px 20px 10px;
+            border-bottom: 1px solid var(--border-glass);
+            margin-bottom: 20px;
+        }
+        .brand-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--cyan);
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 10px var(--emerald);
+        }
+        .brand-box h1 {
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
             color: #ffffff;
-            font-size: 13px;
-            margin-bottom: 3px;
         }
-        .painel-geral {
-            background-color: #0d0d0d;
-            border: 1px solid #222222;
-            border-radius: 6px;
-            padding: 18px 20px;
+        .brand-clock {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .nav-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            padding: 0 10px;
+            margin-bottom: 10px;
+        }
+        .room-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
             margin-bottom: 24px;
         }
-        .painel-geral-header {
+        .room-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            transition: all 0.18s ease;
+        }
+        .room-link-left {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+        .room-link svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            fill: none;
+            flex-shrink: 0;
+        }
+        .room-link:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: #ffffff;
+            border-color: var(--border-glass);
+        }
+        .room-link.active {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.16) 0%, rgba(14, 165, 233, 0.05) 100%);
+            color: #ffffff;
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+        .room-link.active svg {
+            stroke: var(--cyan);
+        }
+        .room-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-secondary);
+        }
+        .room-link.active .room-tag {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--cyan);
+        }
+        .telemetry-widget {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .telemetry-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+        .telemetry-row span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .telemetry-row strong {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            color: var(--cyan);
+        }
+        .power-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .power-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--emerald), var(--cyan));
+            border-radius: 999px;
+        }
+        .user-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .user-card-info strong {
+            display: block;
+            font-size: 13px;
+            color: #ffffff;
+        }
+        .user-card-info span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--cyan);
+            text-transform: uppercase;
+        }
+        .btn-logout {
+            display: block;
+            text-align: center;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.22);
+            color: #ffffff;
+        }
+
+        /* MAIN VIEWPORT */
+        .viewport {
+            padding: 28px 32px 60px 32px;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        @media (max-width: 640px) {
+            .viewport {
+                padding: 18px 16px 48px 16px;
+            }
+        }
+        .toast {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 22px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(12px);
+        }
+        .toast-sucesso {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #6ee7b7;
+        }
+        .toast-erro {
+            background: rgba(239, 68, 68, 0.14);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            color: #fca5a5;
+        }
+        .toast-aviso {
+            background: rgba(245, 158, 11, 0.14);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            color: #fcd34d;
+        }
+
+        /* MASTER SCENES DOCK */
+        .section-caption {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 12px;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 14px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #1f1f1f;
+            gap: 8px;
         }
-        .painel-geral-header h2 {
-            font-size: 15px;
-            font-weight: 700;
-            color: #ffffff;
+        .section-caption h2 {
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
         }
-        .painel-geral-header span {
+        .section-caption span {
             font-size: 12px;
-            color: #9ca3af;
+            color: var(--text-muted);
         }
-        .geral-grid {
+        .scenes-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
+            gap: 16px;
+            margin-bottom: 30px;
         }
-        @media (max-width: 1100px) {
-            .geral-grid {
+        @media (max-width: 1200px) {
+            .scenes-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
         @media (max-width: 640px) {
-            .geral-grid {
+            .scenes-grid {
                 grid-template-columns: 1fr;
             }
         }
-        .card-geral {
-            background-color: #131313;
-            border: 1px solid #242424;
-            border-radius: 5px;
+        .scene-tile {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+        .scene-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .scene-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .scene-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+            fill: none;
+        }
+        .icon-cyan {
+            background: var(--cyan-glow);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--cyan);
+        }
+        .icon-cyan svg { stroke: var(--cyan); }
+        .icon-amber {
+            background: var(--amber-glow);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--amber);
+        }
+        .icon-amber svg { stroke: var(--amber); }
+        .icon-emerald {
+            background: var(--emerald-glow);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--emerald);
+        }
+        .icon-emerald svg { stroke: var(--emerald); }
+        .icon-indigo {
+            background: rgba(129, 140, 248, 0.15);
+            border: 1px solid rgba(129, 140, 248, 0.3);
+            color: var(--indigo);
+        }
+        .icon-indigo svg { stroke: var(--indigo); }
+
+        .scene-meta {
+            text-align: right;
+        }
+        .scene-meta strong {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: #ffffff;
+        }
+        .scene-meta span {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .scene-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 3px;
+        }
+        .scene-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .scene-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-scene-primary {
+            flex: 1;
+            background: #f8fafc;
+            color: #06080d;
+            border: none;
+            padding: 9px 12px;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+        .btn-scene-primary:hover {
+            background: var(--cyan);
+            color: #06080d;
+            transform: translateY(-1px);
+        }
+        .btn-scene-ghost {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--border-glass);
+            padding: 9px 12px;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+        .btn-scene-ghost:hover {
+            border-color: var(--cyan);
+            background: rgba(56, 189, 248, 0.1);
+        }
+        .temp-mini-input {
+            width: 58px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-glass);
+            color: #ffffff;
+            border-radius: 9px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px;
+        }
+
+        /* ROOM HEADER */
+        .room-banner {
+            background: linear-gradient(135deg, rgba(20, 28, 44, 0.85) 0%, rgba(12, 17, 28, 0.85) 100%);
+            border: 1px solid var(--border-glass);
+            border-radius: 18px;
+            padding: 22px 26px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .room-banner-left span.eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .room-banner-left h2 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+        }
+        .room-banner-left p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .room-banner-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* BENTO DEVICE CARDS */
+        .devices-bento {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 18px;
+            margin-bottom: 32px;
+        }
+        @media (max-width: 480px) {
+            .devices-bento {
+                grid-template-columns: 1fr;
+            }
+        }
+        .device-tile {
+            background: var(--bg-card);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border-glass);
+            border-radius: 18px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 18px;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .device-tile.is-on {
+            background: var(--bg-card-active);
+            border-color: rgba(255, 255, 255, 0.13);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+        }
+        .device-tile.is-on.cat-ar,
+        .device-tile.is-on.cat-geladeira {
+            border-top: 2px solid var(--cyan);
+        }
+        .device-tile.is-on.cat-luz {
+            border-top: 2px solid var(--amber);
+        }
+        .device-tile.is-on.cat-tv,
+        .device-tile.is-on.cat-som {
+            border-top: 2px solid var(--indigo);
+        }
+        .device-tile.is-on.cat-porta,
+        .device-tile.is-on.cat-camera {
+            border-top: 2px solid var(--emerald);
+        }
+        .device-tile.is-off {
+            opacity: 0.78;
+        }
+        .device-tile:hover {
+            transform: translateY(-2px);
+            border-color: rgba(56, 189, 248, 0.35);
+        }
+
+        .tile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .tile-title-group {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .tile-cat-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--cyan);
+            display: block;
+            margin-bottom: 2px;
+        }
+        .cat-luz .tile-cat-badge { color: var(--amber); }
+        .cat-porta .tile-cat-badge, .cat-camera .tile-cat-badge { color: var(--emerald); }
+        .cat-tv .tile-cat-badge, .cat-som .tile-cat-badge { color: var(--indigo); }
+
+        .tile-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.25;
+        }
+        .tile-room-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* HARDWARE TOGGLE SWITCH */
+        .switch-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-glass);
+            width: 54px;
+            height: 30px;
+            border-radius: 999px;
+            padding: 3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        .switch-btn .knob {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #94a3b8;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .switch-btn.on {
+            background: rgba(56, 189, 248, 0.25);
+            border-color: var(--cyan);
+        }
+        .switch-btn.on .knob {
+            transform: translateX(24px);
+            background: var(--cyan);
+            box-shadow: 0 0 12px var(--cyan);
+        }
+        .cat-luz .switch-btn.on {
+            background: rgba(245, 158, 11, 0.25);
+            border-color: var(--amber);
+        }
+        .cat-luz .switch-btn.on .knob {
+            background: var(--amber);
+            box-shadow: 0 0 12px var(--amber);
+        }
+        .cat-porta .switch-btn.on, .cat-camera .switch-btn.on {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: var(--emerald);
+        }
+        .cat-porta .switch-btn.on .knob, .cat-camera .switch-btn.on .knob {
+            background: var(--emerald);
+            box-shadow: 0 0 12px var(--emerald);
+        }
+
+        /* TELEMETRY DISPLAY READOUT */
+        .dial-readout {
+            background: rgba(6, 9, 15, 0.65);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .big-metric {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+        .big-metric small {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-left: 4px;
+        }
+        .metric-meta {
+            text-align: right;
+        }
+        .metric-meta .mode-pill {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 3px 9px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+        }
+        .metric-meta .watts-label {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* CAMERA HUD VIEWPORT */
+        .cam-hud {
+            background:
+                linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+                radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.14) 0%, rgba(4, 7, 12, 0.95) 80%);
+            background-size: 20px 20px, 20px 20px, 100% 100%;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: 12px;
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+        }
+        .cam-hud-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--emerald);
+            margin-bottom: 14px;
+        }
+        .rec-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(239, 68, 68, 0.18);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            color: #fca5a5;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .cam-hud-feed {
+            font-size: 12px;
+            color: #e2e8f0;
+            padding: 8px 0;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+            margin-bottom: 8px;
+        }
+        .cam-hud-bottom {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* CONTROLS FORM */
+        .tile-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .slider-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .range-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            outline: none;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--cyan);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--cyan);
+        }
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: end;
+        }
+        .control-field label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .select-modern {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-glass);
+            color: #ffffff;
+            padding: 9px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-family: inherit;
+            outline: none;
+        }
+        .select-modern:focus {
+            border-color: var(--cyan);
+        }
+        .btn-apply {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: var(--cyan);
+            padding: 9px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.18s;
+            height: 37px;
+        }
+        .btn-apply:hover {
+            background: var(--cyan);
+            color: #06080d;
+        }
+        .locked-notice {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fcd34d;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        /* SMART FRIDGE VISION HUB */
+        .fridge-hub {
+            background: linear-gradient(145deg, rgba(14, 22, 36, 0.92) 0%, rgba(9, 13, 22, 0.95) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 20px;
+            padding: 26px;
+            margin-bottom: 32px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+        }
+        .fridge-hub-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .fridge-hub-top h3 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .fridge-hub-top p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .fridge-grid {
+            display: grid;
+            grid-template-columns: 1.65fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 960px) {
+            .fridge-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .fridge-items-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 12px;
+        }
+        .fridge-item-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
             padding: 14px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             gap: 10px;
         }
-        .card-geral-topo {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        .card-geral-titulo {
-            font-size: 12px;
-            font-weight: 700;
-            color: #ffffff;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-        .card-geral-status {
-            font-size: 11px;
-            color: #60a5fa;
-            font-weight: 600;
-        }
-        .card-geral-desc {
-            font-size: 12px;
-            color: #9ca3af;
-        }
-        .acoes-inline {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .btn-azul {
-            background-color: #2563eb;
-            color: #ffffff;
-            border: 1px solid #3b82f6;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .btn-azul:hover {
-            background-color: #1d4ed8;
-        }
-        .btn-escuro {
-            background-color: #1c1c1c;
-            color: #e5e7eb;
-            border: 1px solid #333333;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .btn-escuro:hover {
-            background-color: #262626;
-            border-color: #2563eb;
-        }
-        .input-curto {
-            width: 68px;
-            background-color: #080808;
-            border: 1px solid #333333;
-            color: #ffffff;
-            padding: 7px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            text-align: center;
-        }
-        .secao-comodos-titulo {
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #9ca3af;
-            margin-bottom: 10px;
-        }
-        .abas-comodos {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-        .aba-comodo {
-            background-color: #0f0f0f;
-            border: 1px solid #262626;
-            color: #d1d5db;
-            text-decoration: none;
-            padding: 11px 18px;
-            border-radius: 5px;
-            font-size: 13px;
-            font-weight: 600;
-            transition: background-color 0.15s, border-color 0.15s;
-        }
-        .aba-comodo:hover {
-            background-color: #171717;
-            border-color: #3b82f6;
-            color: #ffffff;
-        }
-        .aba-comodo.ativa {
-            background-color: #2563eb;
-            border-color: #60a5fa;
-            color: #ffffff;
-        }
-        .cabecalho-comodo {
-            background-color: #0d0d0d;
-            border: 1px solid #222222;
-            border-radius: 5px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .cabecalho-comodo h2 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-        .cabecalho-comodo p {
-            font-size: 13px;
-            color: #9ca3af;
-        }
-        .grid-dispositivos {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-        @media (max-width: 480px) {
-            .grid-dispositivos {
-                grid-template-columns: 1fr;
-            }
-        }
-        .card-disp {
-            background-color: #0d0d0d;
-            border: 1px solid #242424;
-            border-radius: 6px;
-            padding: 18px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 14px;
-        }
-        .card-disp.ligado {
-            border-top: 3px solid #2563eb;
-        }
-        .card-disp.desligado {
-            border-top: 3px solid #333333;
-            opacity: 0.88;
-        }
-        .disp-topo {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        .disp-cat {
-            display: inline-block;
+        .fridge-item-cat {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #60a5fa;
-            background-color: #111827;
-            border: 1px solid #1e3a8a;
-            padding: 2px 8px;
-            border-radius: 3px;
-            margin-bottom: 6px;
-        }
-        .disp-nome {
-            font-size: 16px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-        .disp-comodo-tag {
-            font-size: 11px;
-            color: #9ca3af;
-        }
-        .disp-badges {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
-        }
-        .pill-status {
-            font-size: 11px;
-            font-weight: 700;
-            padding: 3px 9px;
-            border-radius: 3px;
+            color: var(--cyan);
             text-transform: uppercase;
         }
-        .pill-on {
-            background-color: #0b2149;
-            color: #60a5fa;
-            border: 1px solid #2563eb;
-        }
-        .pill-off {
-            background-color: #1a1a1a;
-            color: #9ca3af;
-            border: 1px solid #333333;
-        }
-        .watts-tag {
-            font-size: 11px;
-            color: #9ca3af;
-        }
-        .resumo-caixa {
-            background-color: #141414;
-            border: 1px solid #222222;
-            padding: 10px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            color: #f3f4f6;
-            font-weight: 600;
-        }
-        .resumo-caixa small {
-            display: block;
-            font-weight: 400;
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 2px;
-        }
-        .camera-monitor {
-            background-color: #06090f;
-            border: 1px solid #1e3a8a;
-            border-radius: 4px;
-            padding: 12px;
-            font-family: "Consolas", "Courier New", monospace;
-        }
-        .camera-monitor-topo {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #60a5fa;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #172554;
-            padding-bottom: 4px;
-        }
-        .rec-dot {
-            color: #ef4444;
-            font-weight: 700;
-        }
-        .camera-monitor-status {
-            font-size: 12px;
-            color: #e5e7eb;
-        }
-        .form-controles {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            border-top: 1px solid #1f1f1f;
-            padding-top: 12px;
-        }
-        .linha-campos {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .linha-campos.unico {
-            grid-template-columns: 1fr;
-        }
-        .grupo-campo label {
-            display: block;
-            font-size: 11px;
-            font-weight: 600;
-            color: #9ca3af;
-            margin-bottom: 4px;
-        }
-        .grupo-campo select,
-        .grupo-campo input {
-            width: 100%;
-            background-color: #080808;
-            border: 1px solid #2e2e2e;
-            color: #ffffff;
-            padding: 8px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        .grupo-campo select:focus,
-        .grupo-campo input:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-        .botoes-card {
-            display: flex;
-            gap: 8px;
-            margin-top: 4px;
-        }
-        .botoes-card button {
-            flex: 1;
-        }
-        .aviso-restrito {
-            font-size: 11px;
-            color: #fbbf24;
-            background-color: #1f1708;
-            border: 1px solid #92400e;
-            padding: 6px 10px;
-            border-radius: 4px;
-        }
-        .secao-geladeira {
-            background-color: #0d0d0d;
-            border: 1px solid #2563eb;
-            border-radius: 6px;
-            padding: 22px;
-            margin-bottom: 28px;
-        }
-        .secao-geladeira-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 18px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #1f1f1f;
-        }
-        .secao-geladeira-header h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-        .secao-geladeira-header p {
-            font-size: 13px;
-            color: #9ca3af;
-        }
-        .geladeira-layout {
-            display: grid;
-            grid-template-columns: 1.6fr 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 900px) {
-            .geladeira-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-        .tabela-itens {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        .tabela-itens th {
-            text-align: left;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #9ca3af;
-            padding: 10px;
-            border-bottom: 1px solid #262626;
-        }
-        .tabela-itens td {
-            padding: 10px;
-            border-bottom: 1px solid #1a1a1a;
-            color: #e5e7eb;
-        }
-        .qtd-badge {
-            display: inline-block;
-            background-color: #111827;
-            border: 1px solid #1d4ed8;
-            color: #93c5fd;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        .btn-qtd {
-            background-color: #1a1a1a;
-            border: 1px solid #333333;
-            color: #ffffff;
-            width: 28px;
-            height: 26px;
-            border-radius: 3px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .btn-qtd:hover {
-            background-color: #2563eb;
-            border-color: #3b82f6;
-        }
-        .box-novo-item {
-            background-color: #131313;
-            border: 1px solid #242424;
-            border-radius: 5px;
-            padding: 16px;
-        }
-        .box-novo-item h4 {
+        .fridge-item-name {
             font-size: 14px;
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 12px;
         }
-        .painel-inferior {
+        .fridge-item-fresh {
+            font-size: 11px;
+            color: var(--emerald);
+        }
+        .fridge-item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-glass);
+        }
+        .fridge-qty-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .btn-step {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-glass);
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-step:hover {
+            background: var(--cyan);
+            color: #06080d;
+        }
+        .fridge-add-card {
+            background: rgba(6, 9, 15, 0.65);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 20px;
+        }
+        .fridge-add-card h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 14px;
+        }
+        .input-modern {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-glass);
+            color: #ffffff;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .input-modern:focus {
+            outline: none;
+            border-color: var(--cyan);
+        }
+
+        /* BOTTOM TELEMETRY PANELS */
+        .bottom-bento {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        @media (max-width: 900px) {
-            .painel-inferior {
+        @media (max-width: 960px) {
+            .bottom-bento {
                 grid-template-columns: 1fr;
             }
         }
-        .card-inferior {
-            background-color: #0d0d0d;
-            border: 1px solid #222222;
-            border-radius: 6px;
-            padding: 18px 20px;
+        .log-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 18px;
+            padding: 22px;
         }
-        .card-inferior h3 {
-            font-size: 15px;
+        .log-panel h3 {
+            font-size: 16px;
             font-weight: 700;
             color: #ffffff;
             margin-bottom: 4px;
         }
-        .card-inferior p.sub {
+        .log-panel p.sub {
             font-size: 12px;
-            color: #9ca3af;
-            margin-bottom: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
         }
-        .lista-cameras-resumo,
-        .lista-logs {
+        .feed-list {
             list-style: none;
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
-        .lista-cameras-resumo li,
-        .lista-logs li {
-            background-color: #131313;
-            border: 1px solid #222222;
-            padding: 10px 12px;
-            border-radius: 4px;
+        .feed-item {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 10px 14px;
             font-size: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
-        .log-hora {
-            color: #60a5fa;
-            font-family: monospace;
+        .feed-time {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
+            color: var(--cyan);
             white-space: nowrap;
         }
     </style>
 </head>
 <body>
-    <header class="topbar">
-        <div class="brand">
-            <div class="brand-indicator"></div>
-            <div class="brand-text">
-                <h1>CASA INTELIGENTE 2050 — CENTRAL DE CONTROLE</h1>
-                <span>Gerenciamento por Cômodo, Clima, TV, Som, Luzes, Geladeira e Câmeras</span>
+    <!-- SIDEBAR WALL CONTROLLER -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand-box">
+                <div class="brand-status">
+                    <span class="status-dot"></span>
+                    <span>DOMUS OS // ONLINE</span>
+                </div>
+                <h1>Residência 2050</h1>
+                <div class="brand-clock" id="live-clock">SINCRONIZADO · 2050</div>
             </div>
-        </div>
-        <div class="topbar-right">
-            <div class="stat-chip">
-                Aparelhos Ativos: <strong>{{ dispositivos_ligados }}/{{ total_dispositivos }}</strong>
-            </div>
-            <div class="stat-chip">
-                Consumo Atual: <strong>{{ potencia_total_watts }} W</strong>
-            </div>
-            <div class="user-badge">
-                {{ usuario.nome_exibicao }} ({{ usuario.perfil | upper }})
-            </div>
-            <a href="{{ url_for('logout') }}" class="btn-sair">Trocar Usuário / Sair</a>
-        </div>
-    </header>
 
-    <main class="container">
+            <div class="nav-label">Ambientes da Casa</div>
+            <nav class="room-nav">
+                {% for c in comodos %}
+                <a href="{{ url_for('painel', comodo=c.codigo) }}"
+                   class="room-link {% if comodo_atual == c.codigo %}active{% endif %}">
+                    <span class="room-link-left">
+                        {% if c.codigo == 'SALA' %}
+                        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                        {% elif c.codigo == 'COZ' %}
+                        <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 10h14M9 6v2M9 14v3"/></svg>
+                        {% elif c.codigo == 'SUITE' %}
+                        <svg viewBox="0 0 24 24"><path d="M3 7v11m0-4h18m0 4V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2"/><path d="M7 10h4"/></svg>
+                        {% elif c.codigo == 'QUARTO2' %}
+                        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 12h6M12 9v6"/></svg>
+                        {% else %}
+                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        {% endif %}
+                        <span>{{ c.nome }}</span>
+                    </span>
+                    <span class="room-tag">{{ c.codigo }}</span>
+                </a>
+                {% endfor %}
+
+                <a href="{{ url_for('painel', comodo='TODOS') }}"
+                   class="room-link {% if comodo_atual == 'TODOS' %}active{% endif %}">
+                    <span class="room-link-left">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                        <span>Todos os Aparelhos</span>
+                    </span>
+                    <span class="room-tag">{{ total_dispositivos }}</span>
+                </a>
+            </nav>
+        </div>
+
+        <div>
+            <div class="telemetry-widget">
+                <div class="telemetry-row">
+                    <span>Consumo Elétrico</span>
+                    <strong>{{ potencia_total_watts }} W</strong>
+                </div>
+                <div class="power-bar">
+                    <div class="power-fill" style="width: {{ [100, (potencia_total_watts // 40)] | min }}%;"></div>
+                </div>
+                <div class="telemetry-row" style="margin-bottom:0;">
+                    <span>Equipamentos Ativos</span>
+                    <strong style="font-size:13px; color:#ffffff;">{{ dispositivos_ligados }} de {{ total_dispositivos }}</strong>
+                </div>
+            </div>
+
+            <div class="user-card">
+                <div class="user-card-info">
+                    <strong>{{ usuario.nome_exibicao }}</strong>
+                    <span>PERFIL: {{ usuario.perfil }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn-logout">Trocar Perfil / Sair</a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN DASHBOARD VIEWPORT -->
+    <main class="viewport">
         {% with mensagens = get_flashed_messages(with_categories=true) %}
             {% if mensagens %}
                 {% for categoria, msg in mensagens %}
-                    <div class="flash-box flash-{{ categoria }}">{{ msg }}</div>
+                    <div class="toast toast-{{ categoria }}">
+                        <span>{{ msg }}</span>
+                        <span style="font-family:'JetBrains Mono',monospace; font-size:11px;">OK</span>
+                    </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
-        <section class="guia-rapido">
-            <div class="guia-passo">
-                <strong>1. Comandos Gerais (Casa Toda)</strong>
-                Use o painel abaixo para colocar todos os ar-condicionados em 20°C de uma vez, apagar todas as lâmpadas ou trancar todas as portas.
+        <!-- MASTER CONTROLS DOCK -->
+        <div class="section-caption">
+            <h2>Cenas Rápidas &amp; Comandos Gerais da Casa (Fila FIFO)</h2>
+            <span>Acione todos os cômodos simultaneamente com 1 clique</span>
+        </div>
+
+        <section class="scenes-grid">
+            <!-- CLIMA MASTER -->
+            <div class="scene-tile">
+                <div>
+                    <div class="scene-head">
+                        <div class="scene-icon icon-cyan">
+                            <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5l-5 5-5-5M17 19l-5-5-5 5M2 12h20M5 7l5 5-5 5M19 7l-5 5 5 5"/></svg>
+                        </div>
+                        <div class="scene-meta">
+                            <strong>{% if media_ar %}{{ media_ar }}°C{% else %}OFF{% endif %}</strong>
+                            <span>{{ ares_ativos }}/{{ total_ares }} Ar ligados</span>
+                        </div>
+                    </div>
+                    <div class="scene-title" style="margin-top:10px;">Climatização Geral</div>
+                    <p class="scene-desc">Sincronize todos os ar-condicionados da casa em 20°C ou escolha a temperatura.</p>
+                </div>
+                <div>
+                    <form method="POST" action="{{ url_for('geral_ar') }}" class="scene-actions" style="margin-bottom:6px;">
+                        <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
+                        <input type="hidden" name="temperatura_geral" value="20">
+                        <button type="submit" class="btn-scene-primary">Todos em 20°C</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('geral_ar') }}" class="scene-actions">
+                        <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
+                        <input type="number" name="temperatura_geral" value="22" min="16" max="28" class="temp-mini-input" title="16°C a 28°C">
+                        <button type="submit" class="btn-scene-ghost">Aplicar °C</button>
+                        <button type="submit" name="acao_ar" value="desligar_todos" class="btn-scene-ghost">Off</button>
+                    </form>
+                </div>
             </div>
-            <div class="guia-passo">
-                <strong>2. Escolha o Cômodo Desejado</strong>
-                Clique nas abas de cômodo (Sala, Cozinha, Suíte, Quarto de Hóspedes ou Segurança) para ver apenas os aparelhos daquele ambiente.
+
+            <!-- ILUMINACAO MASTER -->
+            <div class="scene-tile">
+                <div>
+                    <div class="scene-head">
+                        <div class="scene-icon icon-amber">
+                            <svg viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
+                        </div>
+                        <div class="scene-meta">
+                            <strong>{{ luzes_acesas }}/{{ total_luzes }}</strong>
+                            <span>Luzes acesas</span>
+                        </div>
+                    </div>
+                    <div class="scene-title" style="margin-top:10px;">Iluminação da Casa</div>
+                    <p class="scene-desc">Apague ou acenda todas as lâmpadas e fitas LED de todos os cômodos.</p>
+                </div>
+                <form method="POST" action="{{ url_for('geral_luzes') }}" class="scene-actions">
+                    <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
+                    <button type="submit" name="acao" value="desligar" class="btn-scene-primary">Apagar Todas</button>
+                    <button type="submit" name="acao" value="ligar" class="btn-scene-ghost">Acender Todas</button>
+                </form>
             </div>
-            <div class="guia-passo">
-                <strong>3. Controle TV, Ar, Geladeira e Câmeras</strong>
-                Em cada aparelho você pode ligar/desligar, trocar o canal da TV, ajustar a temperatura do ar, ver o que há dentro da geladeira e monitorar câmeras.
+
+            <!-- PORTAS MASTER -->
+            <div class="scene-tile">
+                <div>
+                    <div class="scene-head">
+                        <div class="scene-icon icon-emerald">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <div class="scene-meta">
+                            <strong>{{ portas_trancadas }}/{{ total_portas }}</strong>
+                            <span>Travas ativas</span>
+                        </div>
+                    </div>
+                    <div class="scene-title" style="margin-top:10px;">Fechaduras &amp; Portão</div>
+                    <p class="scene-desc">Bloqueio biométrico perimetral de todas as portas e garagem (Admin).</p>
+                </div>
+                <form method="POST" action="{{ url_for('geral_portas') }}" class="scene-actions">
+                    <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
+                    <button type="submit" name="acao" value="trancar" class="btn-scene-primary">Trancar Casa</button>
+                    <button type="submit" name="acao" value="destrancar" class="btn-scene-ghost">Destrancar</button>
+                </form>
+            </div>
+
+            <!-- PILHA UNDO -->
+            <div class="scene-tile">
+                <div>
+                    <div class="scene-head">
+                        <div class="scene-icon icon-indigo">
+                            <svg viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+                        </div>
+                        <div class="scene-meta">
+                            <strong>{{ pilha_acoes | length }}</strong>
+                            <span>Na Pilha LIFO</span>
+                        </div>
+                    </div>
+                    <div class="scene-title" style="margin-top:10px;">Reverter Alteração</div>
+                    <p class="scene-desc">
+                        {% if pilha_acoes %}
+                            Última: {{ pilha_acoes[0].descricao }}
+                        {% else %}
+                            Nenhuma alteração recente para desfazer.
+                        {% endif %}
+                    </p>
+                </div>
+                <form method="POST" action="{{ url_for('desfazer_acao') }}" class="scene-actions">
+                    <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
+                    <button type="submit" class="btn-scene-ghost" style="width:100%;">Desfazer Última Ação</button>
+                </form>
             </div>
         </section>
 
-        <section class="painel-geral">
-            <div class="painel-geral-header">
-                <h2>Comandos Gerais da Residência (Ação Simultânea em Todos os Cômodos)</h2>
-                <span>Executado via Fila de Automação (FIFO) com suporte a Desfazer na Pilha (LIFO)</span>
-            </div>
-
-            <div class="geral-grid">
-                <div class="card-geral">
-                    <div>
-                        <div class="card-geral-topo">
-                            <span class="card-geral-titulo">Todos os Ar-Condicionados</span>
-                            <span class="card-geral-status">
-                                {% if media_ar %}{{ ares_ativos }}/{{ total_ares }} ligados (Média {{ media_ar }}°C){% else %}Todos desligados{% endif %}
-                            </span>
-                        </div>
-                        <p class="card-geral-desc">Padronize a temperatura de todos os quartos, sala e cozinha simultaneamente.</p>
-                    </div>
-                    <div class="acoes-inline">
-                        <form method="POST" action="{{ url_for('geral_ar') }}" style="display:flex; gap:6px; width:100%;">
-                            <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
-                            <input type="hidden" name="temperatura_geral" value="20">
-                            <button type="submit" class="btn-azul" style="flex:1;">Colocar Todos em 20°C</button>
-                        </form>
-                        <form method="POST" action="{{ url_for('geral_ar') }}" style="display:flex; gap:6px; width:100%; margin-top:4px;">
-                            <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
-                            <input type="number" name="temperatura_geral" value="22" min="16" max="28" class="input-curto" title="Temperatura entre 16°C e 28°C">
-                            <button type="submit" class="btn-escuro" style="flex:1;">Aplicar °C</button>
-                            <button type="submit" name="acao_ar" value="desligar_todos" class="btn-escuro">Desligar Todos</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="card-geral">
-                    <div>
-                        <div class="card-geral-topo">
-                            <span class="card-geral-titulo">Iluminação da Casa</span>
-                            <span class="card-geral-status">{{ luzes_acesas }}/{{ total_luzes }} acesas</span>
-                        </div>
-                        <p class="card-geral-desc">Apague ou acenda todas as lâmpadas internas e refletores externos de uma só vez.</p>
-                    </div>
-                    <form method="POST" action="{{ url_for('geral_luzes') }}" class="acoes-inline">
-                        <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
-                        <button type="submit" name="acao" value="desligar" class="btn-azul" style="flex:1;">Apagar Todas as Luzes</button>
-                        <button type="submit" name="acao" value="ligar" class="btn-escuro" style="flex:1;">Acender Todas</button>
-                    </form>
-                </div>
-
-                <div class="card-geral">
-                    <div>
-                        <div class="card-geral-topo">
-                            <span class="card-geral-titulo">Portas &amp; Portão da Garagem</span>
-                            <span class="card-geral-status">{{ portas_trancadas }}/{{ total_portas }} trancadas</span>
-                        </div>
-                        <p class="card-geral-desc">Tranque ou libere todas as fechaduras digitais e o portão eletrônico (Requer Admin).</p>
-                    </div>
-                    <form method="POST" action="{{ url_for('geral_portas') }}" class="acoes-inline">
-                        <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
-                        <button type="submit" name="acao" value="trancar" class="btn-azul" style="flex:1;">Trancar Tudo</button>
-                        <button type="submit" name="acao" value="destrancar" class="btn-escuro" style="flex:1;">Destrancar</button>
-                    </form>
-                </div>
-
-                <div class="card-geral">
-                    <div>
-                        <div class="card-geral-topo">
-                            <span class="card-geral-titulo">Desfazer Alteração (Pilha)</span>
-                            <span class="card-geral-status">{{ pilha_acoes | length }} no histórico</span>
-                        </div>
-                        <p class="card-geral-desc">
-                            {% if pilha_acoes %}
-                                Última: {{ pilha_acoes[0].descricao }}
-                            {% else %}
-                                Nenhuma alteração recente na sessão.
-                            {% endif %}
-                        </p>
-                    </div>
-                    <form method="POST" action="{{ url_for('desfazer_acao') }}" class="acoes-inline">
-                        <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
-                        <button type="submit" class="btn-escuro" style="width:100%;">Desfazer Última Ação</button>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <div class="secao-comodos-titulo">Selecione o Cômodo da Casa para Controlar os Aparelhos:</div>
-        <nav class="abas-comodos">
-            {% for c in comodos %}
-                <a href="{{ url_for('painel', comodo=c.codigo) }}"
-                   class="aba-comodo {% if comodo_atual == c.codigo %}ativa{% endif %}">
-                    {{ c.nome }}
-                </a>
-            {% endfor %}
-            <a href="{{ url_for('painel', comodo='TODOS') }}"
-               class="aba-comodo {% if comodo_atual == 'TODOS' %}ativa{% endif %}">
-                Ver Todos os Cômodos ({{ total_dispositivos }})
-            </a>
-        </nav>
-
-        <div class="cabecalho-comodo">
-            <div>
+        <!-- ROOM BANNER -->
+        <div class="room-banner">
+            <div class="room-banner-left">
+                <span class="eyebrow">AMBIENTE SELECIONADO // {{ comodo_atual }}</span>
                 <h2>{{ info_comodo.nome }}</h2>
                 <p>{{ info_comodo.descricao }}</p>
             </div>
-            {% if comodo_atual != 'COZ' and comodo_atual != 'TODOS' %}
-                <a href="{{ url_for('painel', comodo='COZ') }}" class="btn-escuro" style="text-decoration:none;">
-                    Abrir Geladeira Inteligente (Ver Itens na Cozinha)
+            <div class="room-banner-right">
+                {% if comodo_atual != 'COZ' and comodo_atual != 'TODOS' %}
+                <a href="{{ url_for('painel', comodo='COZ') }}" class="btn-scene-ghost" style="text-decoration:none; padding:10px 16px;">
+                    Ver Interior da Geladeira (Cozinha) →
                 </a>
-            {% endif %}
+                {% endif %}
+                {% if comodo_atual != 'EXTERNA' and comodo_atual != 'TODOS' %}
+                <a href="{{ url_for('painel', comodo='EXTERNA') }}" class="btn-scene-ghost" style="text-decoration:none; padding:10px 16px;">
+                    Central de Câmeras →
+                </a>
+                {% endif %}
+            </div>
         </div>
 
+        <!-- SMART FRIDGE INVENTORY (WHEN IN COZINHA OR TODOS) -->
         {% if comodo_atual == 'COZ' or comodo_atual == 'TODOS' %}
-        <section class="secao-geladeira" id="estoque-geladeira">
-            <div class="secao-geladeira-header">
+        <section class="fridge-hub" id="estoque-geladeira">
+            <div class="fridge-hub-top">
                 <div>
-                    <h3>Interior da Geladeira Inteligente (Estoque de Alimentos e Bebidas)</h3>
-                    <p>Visualize tudo o que está guardado na geladeira, retire itens consumidos (-1), reponha (+1) ou cadastre novos produtos.</p>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--cyan); text-transform:uppercase;">SMART VISION // INVENTÁRIO INTERNO</span>
+                    <h3>Interior da Geladeira Inteligente</h3>
+                    <p>Câmeras internas monitoram os alimentos e bebidas abaixo. Clique em (-) ao consumir ou (+) ao repor.</p>
                 </div>
-                <span class="pill-status pill-on">{{ itens_geladeira | length }} Produtos Monitorados</span>
+                <span class="rec-badge" style="background:var(--cyan-glow); border-color:var(--cyan); color:var(--cyan); padding:6px 12px; font-size:11px;">
+                    {{ itens_geladeira | length }} ITENS ARMAZENADOS
+                </span>
             </div>
 
-            <div class="geladeira-layout">
-                <div>
-                    <table class="tabela-itens">
-                        <thead>
-                            <tr>
-                                <th>Produto na Geladeira</th>
-                                <th>Categoria</th>
-                                <th>Conservação</th>
-                                <th>Quantidade</th>
-                                <th>Ajustar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in itens_geladeira %}
-                            <tr>
-                                <td><strong>{{ item.nome_item }}</strong></td>
-                                <td>{{ item.categoria_item }}</td>
-                                <td>{{ item.validade_status }}</td>
-                                <td><span class="qtd-badge">{{ item.quantidade }} {{ item.unidade }}</span></td>
-                                <td>
-                                    <form method="POST" action="{{ url_for('geladeira_alterar_qtd', id_item=item.id) }}" style="display:inline-flex; gap:4px;">
-                                        <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
-                                        <button type="submit" name="operacao" value="menos" class="btn-qtd" title="Retirar 1">-</button>
-                                        <button type="submit" name="operacao" value="mais" class="btn-qtd" title="Adicionar 1">+</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="5">A geladeira está vazia no momento. Adicione itens ao lado.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="fridge-grid">
+                <div class="fridge-items-list">
+                    {% for item in itens_geladeira %}
+                    <div class="fridge-item-card">
+                        <div>
+                            <div class="fridge-item-cat">{{ item.categoria_item }}</div>
+                            <div class="fridge-item-name">{{ item.nome_item }}</div>
+                            <div class="fridge-item-fresh">● {{ item.validade_status }}</div>
+                        </div>
+                        <div class="fridge-item-footer">
+                            <span class="fridge-qty-num">{{ item.quantidade }} {{ item.unidade }}</span>
+                            <form method="POST" action="{{ url_for('geladeira_alterar_qtd', id_item=item.id) }}" style="display:inline-flex; gap:6px;">
+                                <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
+                                <button type="submit" name="operacao" value="menos" class="btn-step" title="Consumir 1">-</button>
+                                <button type="submit" name="operacao" value="mais" class="btn-step" title="Adicionar 1">+</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="fridge-item-card">
+                        <div class="fridge-item-name">Geladeira Vazia</div>
+                        <p style="font-size:12px; color:var(--text-secondary);">Adicione produtos no formulário ao lado.</p>
+                    </div>
+                    {% endfor %}
                 </div>
 
-                <div class="box-novo-item">
-                    <h4>Guardar Novo Item na Geladeira</h4>
-                    <form method="POST" action="{{ url_for('geladeira_adicionar') }}" style="display:flex; flex-direction:column; gap:10px;">
+                <div class="fridge-add-card">
+                    <h4>Adicionar Produto na Geladeira</h4>
+                    <form method="POST" action="{{ url_for('geladeira_adicionar') }}" style="display:flex; flex-direction:column; gap:12px;">
                         <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
-                        <div class="grupo-campo">
-                            <label>Nome do Alimento ou Bebida</label>
-                            <input type="text" name="nome_item" placeholder="Ex: Iogurte Natural, Carne, Cerveja..." required>
+                        <div class="control-field">
+                            <label>Nome do Produto</label>
+                            <input type="text" name="nome_item" class="input-modern" placeholder="Ex: Iogurte Grego, Suco, Filé..." required>
                         </div>
-                        <div class="linha-campos">
-                            <div class="grupo-campo">
-                                <label>Quantidade (1 a 99)</label>
-                                <input type="number" name="quantidade" value="2" min="1" max="99" required>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div class="control-field">
+                                <label>Quantidade (1-99)</label>
+                                <input type="number" name="quantidade" value="2" min="1" max="99" class="input-modern" required>
                             </div>
-                            <div class="grupo-campo">
+                            <div class="control-field">
                                 <label>Unidade</label>
-                                <select name="unidade">
+                                <select name="unidade" class="select-modern">
                                     <option value="unidades">unidades</option>
                                     <option value="garrafas">garrafas</option>
                                     <option value="latas">latas</option>
@@ -867,9 +1280,9 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="grupo-campo">
+                        <div class="control-field">
                             <label>Categoria</label>
-                            <select name="categoria_item">
+                            <select name="categoria_item" class="select-modern">
                                 <option value="Bebidas">Bebidas</option>
                                 <option value="Laticínios">Laticínios</option>
                                 <option value="Carnes & Proteínas">Carnes &amp; Proteínas</option>
@@ -877,188 +1290,171 @@
                                 <option value="Prontos / Sobremesas">Prontos / Sobremesas</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-azul">Guardar na Geladeira</button>
+                        <button type="submit" class="btn-scene-primary" style="padding:11px;">Registrar na Geladeira</button>
                     </form>
                 </div>
             </div>
         </section>
         {% endif %}
 
-        <section class="grid-dispositivos">
+        <!-- BENTO APPLIANCE GRID -->
+        <section class="devices-bento">
             {% for d in dispositivos %}
-            <div class="card-disp {% if d.ligado %}ligado{% else %}desligado{% endif %}">
+            <div class="device-tile {% if d.ligado %}is-on{% else %}is-off{% endif %} cat-{{ d.categoria }}">
                 <div>
-                    <div class="disp-topo">
-                        <div>
-                            <span class="disp-cat">
-                                {% if d.categoria == 'tv' %}SMART TV
-                                {% elif d.categoria == 'ar' %}AR-CONDICIONADO
-                                {% elif d.categoria == 'geladeira' %}GELADEIRA INTELIGENTE
-                                {% elif d.categoria == 'som' %}SOM AMBIENTE
-                                {% elif d.categoria == 'luz' %}ILUMINAÇÃO
-                                {% elif d.categoria == 'porta' %}PORTA / FECHADURA
-                                {% elif d.categoria == 'camera' %}CÂMERA DE SEGURANÇA
-                                {% else %}{{ d.categoria | upper }}{% endif %}
-                            </span>
-                            <div class="disp-nome">{{ d.nome }}</div>
-                            <div class="disp-comodo-tag">Cômodo: {{ mapa_nomes_comodos.get(d.comodo_codigo, d.comodo_codigo) }}</div>
+                    <!-- CARD HEADER WITH HARDWARE TOGGLE -->
+                    <div class="tile-header">
+                        <div class="tile-title-group">
+                            <div class="scene-icon {% if d.categoria in ['ar', 'geladeira'] %}icon-cyan{% elif d.categoria == 'luz' %}icon-amber{% elif d.categoria in ['porta', 'camera'] %}icon-emerald{% else %}icon-indigo{% endif %}">
+                                {% if d.categoria == 'tv' %}
+                                <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                                {% elif d.categoria == 'ar' %}
+                                <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5l-5 5-5-5M17 19l-5-5-5 5M2 12h20"/></svg>
+                                {% elif d.categoria == 'geladeira' %}
+                                <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 10h14M9 6v2M9 14v3"/></svg>
+                                {% elif d.categoria == 'som' %}
+                                <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>
+                                {% elif d.categoria == 'luz' %}
+                                <svg viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
+                                {% elif d.categoria == 'porta' %}
+                                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                {% else %}
+                                <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <span class="tile-cat-badge">
+                                    {% if d.categoria == 'tv' %}SMART TV 8K
+                                    {% elif d.categoria == 'ar' %}CLIMATIZAÇÃO
+                                    {% elif d.categoria == 'geladeira' %}SMART FRIDGE
+                                    {% elif d.categoria == 'som' %}ÁUDIO MULTIROOM
+                                    {% elif d.categoria == 'luz' %}ILUMINAÇÃO SMART
+                                    {% elif d.categoria == 'porta' %}FECHADURA BIOMÉTRICA
+                                    {% elif d.categoria == 'camera' %}CÂMERA DE SEGURANÇA
+                                    {% endif %}
+                                </span>
+                                <div class="tile-name">{{ d.nome }}</div>
+                                <div class="tile-room-sub">{{ mapa_nomes_comodos.get(d.comodo_codigo, d.comodo_codigo) }} · {{ d.detalhe_extra }}</div>
+                            </div>
                         </div>
-                        <div class="disp-badges">
-                            {% if d.categoria == 'porta' %}
-                                <span class="pill-status {% if d.ligado %}pill-on{% else %}pill-off{% endif %}">
-                                    {% if d.ligado %}TRANCADA{% else %}DESTRANCADA{% endif %}
-                                </span>
-                            {% elif d.categoria == 'camera' %}
-                                <span class="pill-status {% if d.ligado %}pill-on{% else %}pill-off{% endif %}">
-                                    {% if d.ligado %}AO VIVO{% else %}PAUSADA{% endif %}
-                                </span>
-                            {% else %}
-                                <span class="pill-status {% if d.ligado %}pill-on{% else %}pill-off{% endif %}">
-                                    {% if d.ligado %}LIGADO{% else %}DESLIGADO{% endif %}
-                                </span>
-                            {% endif %}
-                            <span class="watts-tag">{{ d.consumo_watts() }} W</span>
-                        </div>
+
+                        {% if not (d.restrito_admin and usuario.perfil != 'administrador') %}
+                        <form method="POST" action="{{ url_for('atualizar_dispositivo', id_disp=d.id_disp) }}">
+                            <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
+                            <input type="hidden" name="acao_rapida" value="alternar">
+                            <button type="submit" class="switch-btn {% if d.ligado %}on{% endif %}" title="Alternar Ligado/Desligado">
+                                <span class="knob"></span>
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
 
+                    <!-- DIGITAL DISPLAY OR CAMERA HUD -->
                     {% if d.categoria == 'camera' %}
-                    <div class="camera-monitor" style="margin-top:12px;">
-                        <div class="camera-monitor-topo">
-                            <span>SINAL DE VÍDEO · {{ d.modo_atual | upper }}</span>
-                            <span class="rec-dot">{% if d.ligado %}● GRAVANDO{% else %}○ OFFLINE{% endif %}</span>
+                    <div class="cam-hud" style="margin-top:16px;">
+                        <div class="cam-hud-top">
+                            <span>FEED // {{ d.modo_atual | upper }}</span>
+                            <span class="rec-badge">{% if d.ligado %}● LIVE REC{% else %}○ PAUSADA{% endif %}</span>
                         </div>
-                        <div class="camera-monitor-status">
-                            Status do Sensor: {{ d.detalhe_extra }}
+                        <div class="cam-hud-feed">
+                            TELEMETRIA: {{ d.detalhe_extra }}
+                        </div>
+                        <div class="cam-hud-bottom">
+                            <span>ISO 800 · F/1.6 · 60FPS</span>
+                            <span>CONSUMO: {{ d.consumo_watts() }}W</span>
                         </div>
                     </div>
                     {% else %}
-                    <div class="resumo-caixa" style="margin-top:12px;">
-                        {{ d.resumo_estado() }}
-                        <small>Especificação: {{ d.detalhe_extra }}</small>
+                    <div class="dial-readout" style="margin-top:16px;">
+                        <div class="big-metric">
+                            {% if not d.ligado and d.categoria != 'porta' %}
+                                OFF
+                            {% elif d.categoria in ['ar', 'geladeira'] %}
+                                <span id="val-disp-{{ d.id_disp }}">{{ d.valor_num | int }}</span>°C
+                                <small>ALVO</small>
+                            {% elif d.categoria in ['tv', 'som'] %}
+                                <span id="val-disp-{{ d.id_disp }}">{{ d.valor_num | int }}</span>%
+                                <small>VOL</small>
+                            {% elif d.categoria == 'luz' %}
+                                <span id="val-disp-{{ d.id_disp }}">{{ d.valor_num | int }}</span>%
+                                <small>LUZ</small>
+                            {% elif d.categoria == 'porta' %}
+                                {% if d.ligado %}TRANCADA{% else %}ABERTA{% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="metric-meta">
+                            <span class="mode-pill">{{ d.modo_atual }}</span>
+                            <span class="watts-label">Potência: {{ d.consumo_watts() }} W</span>
+                        </div>
                     </div>
                     {% endif %}
                 </div>
 
+                <!-- INTERACTIVE SLIDERS & SELECTS -->
                 {% if d.restrito_admin and usuario.perfil != 'administrador' %}
-                <div class="aviso-restrito">
-                    Acesso restrito ao Morador Principal (Admin). Convidados podem apenas visualizar o status deste equipamento de segurança.
+                <div class="locked-notice">
+                    Bloqueado para Visitante: este equipamento de segurança requer perfil de Morador Principal (Admin).
                 </div>
                 {% else %}
-                <form method="POST" action="{{ url_for('atualizar_dispositivo', id_disp=d.id_disp) }}" class="form-controles">
+                <form method="POST" action="{{ url_for('atualizar_dispositivo', id_disp=d.id_disp) }}" class="tile-controls">
                     <input type="hidden" name="comodo_retorno" value="{{ comodo_atual }}">
+                    <input type="hidden" name="ligado" value="1">
 
                     {% if d.categoria == 'ar' %}
-                    <div class="linha-campos">
-                        <div class="grupo-campo">
-                            <label>Temperatura (16°C a 28°C)</label>
-                            <input type="number" name="valor_num" value="{{ d.valor_num | int }}" min="16" max="28" required>
+                    <div class="slider-row">
+                        <div class="slider-labels">
+                            <span>Ajustar Temperatura (16°C — 28°C)</span>
+                            <span id="lbl-disp-{{ d.id_disp }}">{{ d.valor_num | int }}°C</span>
                         </div>
-                        <div class="grupo-campo">
-                            <label>Modo de Climatização</label>
-                            <select name="modo_atual">
-                                {% for op in opcoes_modo['ar'] %}
-                                    <option value="{{ op }}" {% if d.modo_atual == op %}selected{% endif %}>{{ op }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    {% elif d.categoria == 'tv' %}
-                    <div class="linha-campos">
-                        <div class="grupo-campo">
-                            <label>Canal ou Aplicativo</label>
-                            <select name="modo_atual">
-                                {% for op in opcoes_modo['tv'] %}
-                                    <option value="{{ op }}" {% if d.modo_atual == op %}selected{% endif %}>{{ op }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="grupo-campo">
-                            <label>Volume da TV (0 a 100%)</label>
-                            <input type="number" name="valor_num" value="{{ d.valor_num | int }}" min="0" max="100" required>
-                        </div>
+                        <input type="range" name="valor_num" min="16" max="28" value="{{ d.valor_num | int }}" class="range-slider"
+                               oninput="document.getElementById('lbl-disp-{{ d.id_disp }}').innerText = this.value + '°C'; var el = document.getElementById('val-disp-{{ d.id_disp }}'); if(el) el.innerText = this.value;">
                     </div>
                     {% elif d.categoria == 'geladeira' %}
-                    <div class="linha-campos">
-                        <div class="grupo-campo">
-                            <label>Temp. Interna (-2°C a 8°C)</label>
-                            <input type="number" name="valor_num" value="{{ d.valor_num | int }}" min="-2" max="8" required>
+                    <div class="slider-row">
+                        <div class="slider-labels">
+                            <span>Temperatura Interna (-2°C — 8°C)</span>
+                            <span id="lbl-disp-{{ d.id_disp }}">{{ d.valor_num | int }}°C</span>
                         </div>
-                        <div class="grupo-campo">
-                            <label>Modo de Refrigeração</label>
-                            <select name="modo_atual">
-                                {% for op in opcoes_modo['geladeira'] %}
-                                    <option value="{{ op }}" {% if d.modo_atual == op %}selected{% endif %}>{{ op }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                        <input type="range" name="valor_num" min="-2" max="8" value="{{ d.valor_num | int }}" class="range-slider"
+                               oninput="document.getElementById('lbl-disp-{{ d.id_disp }}').innerText = this.value + '°C'; var el = document.getElementById('val-disp-{{ d.id_disp }}'); if(el) el.innerText = this.value;">
                     </div>
-                    {% elif d.categoria == 'som' %}
-                    <div class="linha-campos">
-                        <div class="grupo-campo">
-                            <label>Playlist / Fonte de Áudio</label>
-                            <select name="modo_atual">
-                                {% for op in opcoes_modo['som'] %}
-                                    <option value="{{ op }}" {% if d.modo_atual == op %}selected{% endif %}>{{ op }}</option>
-                                {% endfor %}
-                            </select>
+                    {% elif d.categoria in ['tv', 'som'] %}
+                    <div class="slider-row">
+                        <div class="slider-labels">
+                            <span>Nível de Volume (0% — 100%)</span>
+                            <span id="lbl-disp-{{ d.id_disp }}">{{ d.valor_num | int }}%</span>
                         </div>
-                        <div class="grupo-campo">
-                            <label>Volume (0 a 100%)</label>
-                            <input type="number" name="valor_num" value="{{ d.valor_num | int }}" min="0" max="100" required>
-                        </div>
+                        <input type="range" name="valor_num" min="0" max="100" value="{{ d.valor_num | int }}" class="range-slider"
+                               oninput="document.getElementById('lbl-disp-{{ d.id_disp }}').innerText = this.value + '%'; var el = document.getElementById('val-disp-{{ d.id_disp }}'); if(el) el.innerText = this.value;">
                     </div>
                     {% elif d.categoria == 'luz' %}
-                    <div class="linha-campos">
-                        <div class="grupo-campo">
-                            <label>Intensidade / Brilho (0 a 100%)</label>
-                            <input type="number" name="valor_num" value="{{ d.valor_num | int }}" min="0" max="100" required>
+                    <div class="slider-row">
+                        <div class="slider-labels">
+                            <span>Dimmer de Brilho (0% — 100%)</span>
+                            <span id="lbl-disp-{{ d.id_disp }}">{{ d.valor_num | int }}%</span>
                         </div>
-                        <div class="grupo-campo">
-                            <label>Tonalidade da Luz</label>
-                            <select name="modo_atual">
-                                {% for op in opcoes_modo['luz'] %}
-                                    <option value="{{ op }}" {% if d.modo_atual == op %}selected{% endif %}>{{ op }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    {% elif d.categoria == 'porta' %}
-                    <div class="linha-campos unico">
-                        <div class="grupo-campo">
-                            <label>Modo de Segurança da Fechadura</label>
-                            <select name="modo_atual">
-                                {% for op in opcoes_modo['porta'] %}
-                                    <option value="{{ op }}" {% if d.modo_atual == op %}selected{% endif %}>{{ op }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    {% elif d.categoria == 'camera' %}
-                    <div class="linha-campos unico">
-                        <div class="grupo-campo">
-                            <label>Modo de Monitoramento da Câmera</label>
-                            <select name="modo_atual">
-                                {% for op in opcoes_modo['camera'] %}
-                                    <option value="{{ op }}" {% if d.modo_atual == op %}selected{% endif %}>{{ op }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                        <input type="range" name="valor_num" min="0" max="100" value="{{ d.valor_num | int }}" class="range-slider"
+                               oninput="document.getElementById('lbl-disp-{{ d.id_disp }}').innerText = this.value + '%'; var el = document.getElementById('val-disp-{{ d.id_disp }}'); if(el) el.innerText = this.value;">
                     </div>
                     {% endif %}
 
-                    <input type="hidden" name="ligado" value="{% if d.ligado %}1{% else %}0{% endif %}">
-
-                    <div class="botoes-card">
-                        <button type="submit" class="btn-azul">Salvar Ajustes</button>
-                        <button type="submit" name="acao_rapida" value="alternar" class="btn-escuro">
-                            {% if d.categoria == 'porta' %}
-                                {% if d.ligado %}Destrancar Porta{% else %}Trancar Porta{% endif %}
-                            {% elif d.categoria == 'camera' %}
-                                {% if d.ligado %}Pausar Câmera{% else %}Ativar Câmera{% endif %}
-                            {% else %}
-                                {% if d.ligado %}Desligar{% else %}Ligar Aparelho{% endif %}
-                            {% endif %}
-                        </button>
+                    <div class="control-grid">
+                        <div class="control-field">
+                            <label>
+                                {% if d.categoria == 'tv' %}Canal / Streaming Ativo
+                                {% elif d.categoria == 'som' %}Playlist / Fonte Sonora
+                                {% elif d.categoria == 'luz' %}Tonalidade da Iluminação
+                                {% elif d.categoria == 'porta' %}Protocolo de Trava
+                                {% elif d.categoria == 'camera' %}Modo de Lente / IA
+                                {% else %}Modo de Operação{% endif %}
+                            </label>
+                            <select name="modo_atual" class="select-modern">
+                                {% for op in opcoes_modo[d.categoria] %}
+                                    <option value="{{ op }}" {% if d.modo_atual == op %}selected{% endif %}>{{ op }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-apply">Aplicar</button>
                     </div>
                 </form>
                 {% endif %}
@@ -1066,43 +1462,58 @@
             {% endfor %}
         </section>
 
-        <section class="painel-inferior">
-            <div class="card-inferior">
-                <h3>Resumo de Todas as Câmeras de Segurança da Casa</h3>
-                <p class="sub">Visão rápida dos sensores de perímetro, garagem, sala e cozinha.</p>
-                <ul class="lista-cameras-resumo">
+        <!-- BOTTOM TELEMETRY: ALL CAMERAS + SQLITE EVENT LOG -->
+        <section class="bottom-bento">
+            <div class="log-panel">
+                <h3>Central de Monitoramento Perimetral (Câmeras)</h3>
+                <p class="sub">Status consolidado de todas as câmeras instaladas na residência.</p>
+                <ul class="feed-list">
                     {% for cam in cameras_casa %}
-                    <li>
+                    <li class="feed-item">
                         <div>
-                            <strong style="color:#ffffff;">{{ cam.nome }}</strong>
-                            <div style="color:#9ca3af; font-size:11px;">{{ cam.detalhe_extra }} · {{ cam.modo_atual }}</div>
+                            <strong style="color:#ffffff; display:block;">{{ cam.nome }}</strong>
+                            <span style="color:var(--text-secondary);">{{ cam.detalhe_extra }} · {{ cam.modo_atual }}</span>
                         </div>
-                        <span class="pill-status {% if cam.ligado %}pill-on{% else %}pill-off{% endif %}">
-                            {% if cam.ligado %}ATIVA{% else %}OFF{% endif %}
+                        <span class="rec-badge" style="{% if cam.ligado %}background:var(--emerald-glow); border-color:var(--emerald); color:var(--emerald);{% endif %}">
+                            {% if cam.ligado %}ONLINE{% else %}PAUSADA{% endif %}
                         </span>
                     </li>
                     {% endfor %}
                 </ul>
             </div>
 
-            <div class="card-inferior">
-                <h3>Registro de Eventos da Residência (Banco SQLite)</h3>
-                <p class="sub">Histórico auditável de todas as ações dos moradores e comandos gerais.</p>
-                <ul class="lista-logs">
+            <div class="log-panel">
+                <h3>Auditoria de Eventos em Tempo Real (SQLite)</h3>
+                <p class="sub">Histórico gravado no banco relacional de todas as ações executadas.</p>
+                <ul class="feed-list">
                     {% for log in logs %}
-                    <li>
+                    <li class="feed-item">
                         <div>
-                            <strong style="color:#ffffff;">{{ log.usuario }} ({{ log.perfil }}):</strong>
-                            <span style="color:#d1d5db;">{{ log.acao }}</span>
+                            <strong style="color:#ffffff;">{{ log.usuario }}:</strong>
+                            <span style="color:var(--text-secondary);">{{ log.acao }}</span>
                         </div>
-                        <span class="log-hora">{{ log.data_hora }}</span>
+                        <span class="feed-time">{{ log.data_hora }}</span>
                     </li>
                     {% else %}
-                    <li>Nenhum evento registrado ainda.</li>
+                    <li class="feed-item">Nenhum evento registrado.</li>
                     {% endfor %}
                 </ul>
             </div>
         </section>
     </main>
+
+    <script>
+        function updateClock() {
+            var el = document.getElementById('live-clock');
+            if (!el) return;
+            var now = new Date();
+            var h = String(now.getHours()).padStart(2, '0');
+            var m = String(now.getMinutes()).padStart(2, '0');
+            var s = String(now.getSeconds()).padStart(2, '0');
+            el.innerText = 'TELEMETRIA ATIVA · ' + h + ':' + m + ':' + s;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
 </body>
 </html>
