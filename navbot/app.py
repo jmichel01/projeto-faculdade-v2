@@ -1,6 +1,6 @@
+import hashlib
 import os
 from pathlib import Path
-import secrets
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from navbot.banco import BancoNavBot
 from navbot.estruturas import FilaMissoes, PilhaNavegacao
@@ -8,9 +8,19 @@ from navbot.grafo import GrafoPlantaCasa
 from navbot.validadores import validar_dados_missao
 
 
+def obter_chave_sessao() -> str:
+    chave_env = os.environ.get("SECRET_KEY")
+    if chave_env:
+        return chave_env
+    semente = f"navbot-2050-{os.environ.get('VERCEL_GIT_COMMIT_SHA', ' padrao-estavel')}"
+    return hashlib.sha256(semente.encode("utf-8")).hexdigest()
+
+
 def criar_app(caminho_banco: Path | None = None) -> Flask:
     app = Flask(__name__)
-    app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+    app.secret_key = obter_chave_sessao()
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
     banco = BancoNavBot(caminho_banco=caminho_banco)
     grafo = GrafoPlantaCasa()
@@ -20,32 +30,61 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
     app.config["BANCO"] = banco
     app.config["GRAFO"] = grafo
 
+    def sincronizar_fila_pendentes() -> None:
+        fila_missoes.limpar()
+        for m in banco.listar_missoes():
+            if m.status == "pendente":
+                fila_missoes.enfileirar_com_prioridade(
+                    {
+                        "id_missao": m.id_missao,
+                        "titulo": m.titulo,
+                        "origem": m.origem,
+                        "destino": m.destino,
+                        "prioridade": m.prioridade,
+                    }
+                )
+
+    def carregar_pilha_sessao() -> None:
+        historico = session.get("pilha_passos", [])
+        if isinstance(historico, list) and pilha_nav.tamanho() == 0:
+            for item in historico:
+                if isinstance(item, dict):
+                    pilha_nav.empilhar(item)
+
+    def salvar_pilha_sessao() -> None:
+        session["pilha_passos"] = list(reversed(pilha_nav.listar_recentes()))
+        session.modified = True
+
     @app.route("/login", methods=["GET", "POST"])
     def login():
         if request.method == "POST":
-            username = request.form.get("username", "")
-            senha = request.form.get("senha", "")
+            username = request.form.get("username", "").strip()
+            senha = request.form.get("senha", "").strip()
             usuario = banco.autenticar(username, senha)
             if usuario:
+                session.clear()
                 session["usuario"] = usuario
+                session["pilha_passos"] = []
                 banco.registrar_log(
                     str(usuario["username"]),
                     str(usuario["perfil"]),
-                    "Conectou ao terminal de navegação do Robô R-2050.",
+                    "Entrou no painel de controle do Robô R-2050.",
                 )
+                flash(f"Bem-vindo, {usuario['nome_exibicao']}!", "sucesso")
                 return redirect(url_for("painel"))
-            flash("Credenciais inválidas. Verifique usuário e senha.", "erro")
+            flash("Usuário ou senha incorretos. Use admin / 1234 ou convidado / 1234.", "erro")
         return render_template("login.html")
 
     @app.route("/logout")
     def logout():
-        usuario = session.pop("usuario", None)
+        usuario = session.get("usuario")
         if usuario:
             banco.registrar_log(
                 str(usuario["username"]),
                 str(usuario["perfil"]),
-                "Encerrou sessão no terminal.",
+                "Saiu do painel de controle.",
             )
+        session.clear()
         return redirect(url_for("login"))
 
     @app.route("/")
@@ -53,6 +92,9 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         usuario = session.get("usuario")
         if not usuario:
             return redirect(url_for("login"))
+
+        carregar_pilha_sessao()
+        sincronizar_fila_pendentes()
 
         comodos = banco.listar_comodos()
         mapa_comodos = {str(c["codigo"]): c for c in comodos}
@@ -84,26 +126,26 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
             return redirect(url_for("login"))
 
         if usuario["perfil"] != "administrador":
-            flash("Permissão negada: apenas o Administrador pode interditar cômodos ou alterar obstáculos no Grafo.", "erro")
+            flash("Permissão negada: apenas o Administrador pode fechar ou liberar cômodos na planta.", "erro")
             banco.registrar_log(
                 str(usuario["username"]),
                 str(usuario["perfil"]),
-                f"Tentativa bloqueada de interditar o nó '{codigo}' no grafo.",
+                f"Tentativa bloqueada de interditar o cômodo '{codigo}'.",
             )
             return redirect(url_for("painel"))
 
         if codigo == "BASE":
-            flash("A Base de Recarga Central (BASE) não pode ser bloqueada.", "erro")
+            flash("A Base de Recarga (BASE) não pode ser interditada.", "erro")
             return redirect(url_for("painel"))
 
         ficou_bloqueado = banco.alternar_bloqueio_comodo(codigo)
-        estado_txt = "INTERDITADO (Obstáculo Ativo)" if ficou_bloqueado else "LIBERADO"
+        estado_txt = "FECHADO (Com Obstáculo)" if ficou_bloqueado else "LIBERADO"
         banco.registrar_log(
             str(usuario["username"]),
             str(usuario["perfil"]),
-            f"Alterou o nó '{codigo}' no Grafo para {estado_txt}.",
+            f"Alterou o cômodo '{codigo}' para {estado_txt}.",
         )
-        flash(f"Nó '{codigo}' atualizado no Grafo: {estado_txt}.", "sucesso")
+        flash(f"Cômodo '{codigo}' agora está {estado_txt}. O robô vai desviar dele nas próximas rotas!", "sucesso")
         return redirect(url_for("painel"))
 
     @app.route("/navegar/dijkstra", methods=["POST"])
@@ -112,6 +154,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         if not usuario:
             return redirect(url_for("login"))
 
+        carregar_pilha_sessao()
         destino = request.form.get("destino", "SALA")
         comodo_destino = banco.buscar_comodo(destino)
         if not comodo_destino:
@@ -120,7 +163,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
 
         if comodo_destino["restrito_admin"] and usuario["perfil"] != "administrador":
             flash(
-                f"ACESSO RESTRITO: O cômodo '{comodo_destino['nome']}' ({destino}) exige perfil Administrador.",
+                f"ACESSO RESTRITO: O ambiente '{comodo_destino['nome']}' ({destino}) só pode ser acessado pelo Administrador.",
                 "erro",
             )
             banco.registrar_log(
@@ -134,6 +177,10 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         origem = str(robo["no_atual"])
         bloqueados = banco.obter_conjunto_bloqueados()
 
+        if origem == destino:
+            flash(f"O robô já está em '{comodo_destino['nome']}' ({destino}). Escolha outro cômodo!", "sucesso")
+            return redirect(url_for("painel"))
+
         caminho, distancia = grafo.calcular_menor_caminho_dijkstra(
             origem=origem,
             destino=destino,
@@ -142,7 +189,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
 
         if not caminho:
             flash(
-                f"Rota inacessível! Não há caminho livre no Grafo entre '{origem}' e '{destino}' devido a obstáculos.",
+                f"Rota bloqueada! Não existe caminho livre até '{comodo_destino['nome']}' ({destino}) porque os corredores estão fechados.",
                 "erro",
             )
             return redirect(url_for("painel"))
@@ -150,7 +197,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         gasto = round(distancia * 0.85, 1)
         bateria_atual = float(robo["bateria_pct"])
         if bateria_atual < gasto and destino != "BASE":
-            flash("Bateria insuficiente para essa rota! Recarregue o robô na BASE primeiro.", "erro")
+            flash("Bateria baixa para essa distância! Clique em 'Recarregar na Base' primeiro.", "erro")
             return redirect(url_for("painel"))
 
         pilha_nav.empilhar(
@@ -160,6 +207,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
                 "bateria_anterior": bateria_atual,
             }
         )
+        salvar_pilha_sessao()
 
         nova_bateria = 100.0 if destino == "BASE" else max(5.0, bateria_atual - gasto)
         rota_formatada = " -> ".join(caminho)
@@ -168,9 +216,9 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         banco.registrar_log(
             str(usuario["username"]),
             str(usuario["perfil"]),
-            f"Dijkstra calculou menor caminho ({distancia}m): {rota_formatada}.",
+            f"Rota ótima executada ({distancia}m): {rota_formatada}.",
         )
-        flash(f"Rota ótima executada via Dijkstra: {rota_formatada} ({distancia}m).", "sucesso")
+        flash(f"Rota ótima executada: {rota_formatada} (Distância total: {distancia}m).", "sucesso")
         return redirect(url_for("painel"))
 
     @app.route("/robo/recarregar", methods=["POST"])
@@ -179,6 +227,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         if not usuario:
             return redirect(url_for("login"))
 
+        carregar_pilha_sessao()
         robo = banco.obter_estado_robo()
         origem = str(robo["no_atual"])
         bloqueados = banco.obter_conjunto_bloqueados()
@@ -192,13 +241,14 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
                 "bateria_anterior": float(robo["bateria_pct"]),
             }
         )
+        salvar_pilha_sessao()
         banco.atualizar_estado_robo("BASE", 100.0, rota_str, distancia)
         banco.registrar_log(
             str(usuario["username"]),
             str(usuario["perfil"]),
-            f"Retornou o robô à BASE ({rota_str}) e recarregou bateria para 100%.",
+            f"Robô voltou para a BASE ({rota_str}) e recarregou a bateria em 100%.",
         )
-        flash("Robô retornou para a BASE e recarregou a bateria para 100%.", "sucesso")
+        flash("Robô voltou para a Base de Recarga e está com 100% de bateria!", "sucesso")
         return redirect(url_for("painel"))
 
     @app.route("/pilha/desfazer", methods=["POST"])
@@ -207,11 +257,13 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         if not usuario:
             return redirect(url_for("login"))
 
+        carregar_pilha_sessao()
         ultimo = pilha_nav.desempilhar()
         if not ultimo:
-            flash("A Pilha de Navegação (LIFO) está vazia.", "erro")
+            flash("Ainda não há movimentos para desfazer. Mova o robô primeiro!", "erro")
             return redirect(url_for("painel"))
 
+        salvar_pilha_sessao()
         no_ant = str(ultimo["no_anterior"])
         rota_ant = str(ultimo["rota_anterior"])
         bat_ant = float(ultimo["bateria_anterior"])
@@ -219,9 +271,9 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         banco.registrar_log(
             str(usuario["username"]),
             str(usuario["perfil"]),
-            f"Desempilhou retorno (Pilha LIFO): robô voltou ao nó '{no_ant}'.",
+            f"Desfez último movimento (Pilha LIFO): robô voltou para '{no_ant}'.",
         )
-        flash(f"Retorno via Pilha LIFO executado: robô voltou para '{no_ant}'.", "sucesso")
+        flash(f"Movimento desfeito! O robô voltou para o cômodo anterior: {no_ant}.", "sucesso")
         return redirect(url_for("painel"))
 
     @app.route("/missao/nova", methods=["POST"])
@@ -239,11 +291,11 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
 
         comodo_dest = banco.buscar_comodo(destino)
         if comodo_dest and comodo_dest["restrito_admin"] and usuario["perfil"] != "administrador":
-            flash("Permissão negada: Visitantes não podem criar missões para áreas restritas (LAB / GAR).", "erro")
+            flash("Permissão negada: Visitantes não podem criar tarefas para áreas restritas (Escritório / Garagem).", "erro")
             return redirect(url_for("painel"))
 
         if tipo in ("patrulha", "emergencia") and usuario["perfil"] != "administrador":
-            flash("Permissão negada: Missões de Patrulha e Emergência são exclusivas do Administrador.", "erro")
+            flash("Permissão negada: Tarefas de Patrulha e Emergência são exclusivas do Administrador.", "erro")
             return redirect(url_for("painel"))
 
         ok, erro, prioridade, carga = validar_dados_missao(
@@ -254,12 +306,13 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
             return redirect(url_for("painel"))
 
         banco.cadastrar_missao(titulo.strip(), tipo, origem, destino, prioridade, carga)
+        sincronizar_fila_pendentes()
         banco.registrar_log(
             str(usuario["username"]),
             str(usuario["perfil"]),
-            f"Cadastrou missão '{titulo.strip()}' ({origem} -> {destino}, P{prioridade}).",
+            f"Criou nova tarefa '{titulo.strip()}' ({origem} -> {destino}, Prioridade {prioridade}).",
         )
-        flash(f"Missão '{titulo.strip()}' adicionada com sucesso.", "sucesso")
+        flash(f"Tarefa '{titulo.strip()}' adicionada na Fila de Prioridade!", "sucesso")
         return redirect(url_for("painel"))
 
     @app.route("/fila/carregar", methods=["POST"])
@@ -268,22 +321,13 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         if not usuario:
             return redirect(url_for("login"))
 
-        pendentes = [m for m in banco.listar_missoes() if m.status == "pendente"]
-        if not pendentes:
-            flash("Não há missões pendentes para enfileirar.", "erro")
+        sincronizar_fila_pendentes()
+        total = fila_missoes.tamanho()
+        if total == 0:
+            flash("Não há tarefas pendentes na fila no momento.", "erro")
             return redirect(url_for("painel"))
 
-        for m in pendentes:
-            fila_missoes.enfileirar_com_prioridade(
-                {
-                    "id_missao": m.id_missao,
-                    "titulo": m.titulo,
-                    "origem": m.origem,
-                    "destino": m.destino,
-                    "prioridade": m.prioridade,
-                }
-            )
-        flash(f"{len(pendentes)} missões carregadas na Fila de Prioridade!", "sucesso")
+        flash(f"{total} tarefas organizadas por ordem de prioridade!", "sucesso")
         return redirect(url_for("painel"))
 
     @app.route("/fila/executar", methods=["POST"])
@@ -292,9 +336,11 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         if not usuario:
             return redirect(url_for("login"))
 
+        carregar_pilha_sessao()
+        sincronizar_fila_pendentes()
         item = fila_missoes.desenfileirar()
         if not item:
-            flash("A Fila de Missões está vazia. Clique em 'Enfileirar Pendentes' primeiro.", "erro")
+            flash("Todas as tarefas da fila já foram concluídas! Cadastre uma nova tarefa abaixo.", "erro")
             return redirect(url_for("painel"))
 
         missao = banco.buscar_missao(int(item["id_missao"]))
@@ -307,7 +353,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         )
         if not caminho:
             flash(
-                f"Missão '{missao.titulo}' bloqueada: sem caminho livre entre {missao.origem} e {missao.destino}!",
+                f"Não foi possível executar '{missao.titulo}': o caminho entre {missao.origem} e {missao.destino} está bloqueado!",
                 "erro",
             )
             return redirect(url_for("painel"))
@@ -320,6 +366,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
                 "bateria_anterior": float(robo["bateria_pct"]),
             }
         )
+        salvar_pilha_sessao()
 
         gasto = missao.calcular_gasto_bateria(distancia)
         nova_bat = max(5.0, float(robo["bateria_pct"]) - gasto)
@@ -330,10 +377,10 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
         banco.registrar_log(
             str(usuario["username"]),
             str(usuario["perfil"]),
-            f"Executou missão da Fila (P{missao.prioridade}): '{missao.titulo}' | Rota: {rota_str} ({distancia}m, -{gasto}% bat).",
+            f"Concluiu tarefa prioritária (P{missao.prioridade}): '{missao.titulo}' | Rota: {rota_str} ({distancia}m, -{gasto}% bateria).",
         )
         flash(
-            f"Missão '{missao.titulo}' concluída! Rota Dijkstra: {rota_str} ({distancia}m | Polimorfismo POO: -{gasto}% bateria).",
+            f"Tarefa '{missao.titulo}' concluída! Menor caminho: {rota_str} ({distancia}m | Consumo: -{gasto}% de bateria).",
             "sucesso",
         )
         return redirect(url_for("painel"))
@@ -345,11 +392,11 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
             return redirect(url_for("login"))
 
         if usuario["perfil"] != "administrador":
-            flash("Apenas o Administrador pode remover registros de missões.", "erro")
+            flash("Apenas o Administrador pode remover tarefas do histórico.", "erro")
             return redirect(url_for("painel"))
 
         banco.excluir_missao(id_missao)
-        flash("Missão removida do banco de dados.", "sucesso")
+        flash("Tarefa removida com sucesso.", "sucesso")
         return redirect(url_for("painel"))
 
     return app

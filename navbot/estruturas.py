@@ -27,6 +27,9 @@ class FilaMissoes:
     def __init__(self) -> None:
         self._itens: List[Dict[str, object]] = []
 
+    def limpar(self) -> None:
+        self._itens.clear()
+
     def enfileirar_com_prioridade(self, missao: Dict[str, object]) -> None:
         self._itens.append(missao)
         self._itens.sort(key=lambda item: int(item.get("prioridade", 1)), reverse=True)

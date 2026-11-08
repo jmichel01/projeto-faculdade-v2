@@ -3,36 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NavBot 2050 — Simulador de Navegação em Grafo</title>
+    <title>NavBot 2050 — Painel de Navegação na Planta da Casa</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #04070d;
-            --bg-panel: #0a101d;
-            --bg-sub: #060a12;
-            --border: #172542;
-            --blue-primary: #2563eb;
-            --blue-glow: #38bdf8;
-            --blue-soft: rgba(37, 99, 235, 0.16);
-            --red-alert: #ef4444;
-            --green-ok: #10b981;
-            --text: #f1f5f9;
-            --muted: #64748b;
+            --bg-body: #090c12;
+            --bg-card: #111622;
+            --bg-item: #171f30;
+            --border: #25324a;
+            --blue-main: #2563eb;
+            --blue-hover: #3b82f6;
+            --blue-bright: #38bdf8;
+            --green: #10b981;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --text-white: #ffffff;
+            --text-gray: #cbd5e1;
+            --text-dim: #94a3b8;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text);
-            padding-bottom: 50px;
+            background-color: var(--bg-body);
+            color: var(--text-white);
+            padding-bottom: 60px;
         }
-        .header {
-            background: rgba(10, 16, 29, 0.92);
-            backdrop-filter: blur(10px);
+        .topbar {
+            background: #0d121d;
             border-bottom: 1px solid var(--border);
-            padding: 14px 28px;
+            padding: 14px 26px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -40,496 +41,675 @@
             gap: 14px;
             position: sticky;
             top: 0;
-            z-index: 30;
+            z-index: 40;
         }
         .brand {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        .brand-badge {
-            width: 38px;
-            height: 38px;
+        .brand-icon {
+            width: 40px;
+            height: 40px;
             border-radius: 10px;
-            background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+            background: linear-gradient(135deg, #2563eb, #0ea5e9);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 15px;
-            color: #fff;
-            box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+            font-size: 20px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
         }
         .brand h1 {
             font-size: 17px;
-            letter-spacing: 0.3px;
+            font-weight: 800;
         }
         .brand span {
+            display: block;
             font-size: 12px;
-            color: var(--muted);
-            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-dim);
         }
-        .operator-bar {
+        .user-controls {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 13px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        .role-chip {
-            padding: 5px 11px;
-            border-radius: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
+        .profile-pill {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 700;
-            text-transform: uppercase;
-            background: var(--blue-soft);
-            color: var(--blue-glow);
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            background: rgba(37, 99, 235, 0.2);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: var(--blue-bright);
         }
-        .btn-logout {
-            color: #cbd5e1;
+        .btn-top {
             text-decoration: none;
-            padding: 7px 13px;
+            padding: 8px 14px;
             border-radius: 8px;
             border: 1px solid var(--border);
-            background: var(--bg-sub);
-            font-size: 12px;
+            background: var(--bg-item);
+            color: #fff;
+            font-size: 12.5px;
             font-weight: 600;
         }
-        .btn-logout:hover {
-            border-color: var(--blue-glow);
+        .btn-top:hover {
+            border-color: var(--blue-bright);
         }
         .container {
             max-width: 1260px;
-            margin: 24px auto;
-            padding: 0 22px;
+            margin: 22px auto;
+            padding: 0 20px;
         }
-        .flash-msg {
-            padding: 13px 18px;
+        .how-to-bar {
+            background: linear-gradient(90deg, rgba(29, 78, 216, 0.18), rgba(14, 165, 233, 0.10));
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+        }
+        .how-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--text-gray);
+        }
+        .how-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 7px;
+            background: var(--blue-main);
+            color: #fff;
+            font-weight: 800;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .how-step strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .flash-banner {
+            padding: 14px 18px;
             border-radius: 12px;
-            margin-bottom: 20px;
-            font-size: 13.5px;
+            margin-bottom: 18px;
+            font-size: 14px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .flash-ok {
-            background: rgba(37, 99, 235, 0.16);
-            border: 1px solid rgba(56, 189, 248, 0.45);
-            color: #bae6fd;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            color: #a7f3d0;
         }
         .flash-err {
-            background: rgba(239, 68, 68, 0.16);
-            border: 1px solid rgba(239, 68, 68, 0.45);
+            background: rgba(239, 68, 68, 0.18);
+            border: 1px solid rgba(239, 68, 68, 0.55);
             color: #fecaca;
         }
-        .kpi-grid {
+        .status-strip {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin-bottom: 22px;
+            grid-template-columns: 1.2fr 1.2fr 1fr auto;
+            gap: 14px;
+            margin-bottom: 20px;
+            align-items: stretch;
         }
-        .kpi-card {
-            background: var(--bg-panel);
+        @media (max-width: 980px) {
+            .status-strip { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 620px) {
+            .status-strip { grid-template-columns: 1fr; }
+        }
+        .stat-box {
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 18px 20px;
-            position: relative;
-            overflow: hidden;
+            padding: 15px 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        .kpi-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--blue-glow);
-        }
-        .kpi-label {
-            font-size: 11px;
-            color: var(--muted);
+        .stat-label {
+            font-size: 11.5px;
+            color: var(--text-dim);
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
-            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 5px;
         }
-        .kpi-val {
-            font-size: 24px;
-            font-weight: 700;
-            margin-top: 6px;
+        .stat-value {
+            font-size: 18px;
+            font-weight: 800;
             color: #fff;
+        }
+        .stat-sub {
+            font-size: 12px;
+            color: var(--blue-bright);
+            margin-top: 3px;
             font-family: 'JetBrains Mono', monospace;
         }
-        .main-layout {
+        .battery-bar {
+            width: 100%;
+            height: 8px;
+            background: #090c12;
+            border-radius: 99px;
+            overflow: hidden;
+            margin-top: 8px;
+            border: 1px solid var(--border);
+        }
+        .battery-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #38bdf8);
+            border-radius: 99px;
+        }
+        .quick-actions-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-item);
+            color: #fff;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:hover {
+            border-color: var(--blue-bright);
+            background: #1f2a40;
+        }
+        .btn-primary {
+            background: var(--blue-main);
+            border-color: #3b82f6;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+        .btn-primary:hover {
+            background: var(--blue-hover);
+        }
+        .btn-red {
+            background: rgba(239, 68, 68, 0.16);
+            border-color: rgba(239, 68, 68, 0.45);
+            color: #fca5a5;
+        }
+        .btn-red:hover {
+            background: rgba(239, 68, 68, 0.28);
+            border-color: #ef4444;
+        }
+        .btn-green {
+            background: rgba(16, 185, 129, 0.16);
+            border-color: rgba(16, 185, 129, 0.45);
+            color: #6ee7b7;
+        }
+        .workspace-grid {
             display: grid;
             grid-template-columns: 1.35fr 0.65fr;
             gap: 20px;
             margin-bottom: 22px;
         }
-        @media (max-width: 980px) {
-            .main-layout { grid-template-columns: 1fr; }
+        @media (max-width: 1020px) {
+            .workspace-grid { grid-template-columns: 1fr; }
         }
-        .panel {
-            background: var(--bg-panel);
+        .card {
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 20px;
         }
-        .panel-top {
+        .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-bottom: 14px;
             padding-bottom: 12px;
             border-bottom: 1px solid var(--border);
+        }
+        .card-header h2 {
+            font-size: 16.5px;
+            font-weight: 800;
+        }
+        .card-header p {
+            font-size: 12.5px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+        .legend-row {
+            display: flex;
+            gap: 14px;
             flex-wrap: wrap;
-            gap: 10px;
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-bottom: 12px;
         }
-        .panel-top h2 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #e2e8f0;
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        .map-canvas {
-            background: #050912;
-            border: 1px solid #152238;
-            border-radius: 12px;
-            position: relative;
+        .dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .floorplan-wrap {
+            background: #0a0f18;
+            border: 2px solid #1e293b;
+            border-radius: 14px;
             overflow: hidden;
-            background-image:
-                linear-gradient(rgba(37, 99, 235, 0.07) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(37, 99, 235, 0.07) 1px, transparent 1px);
-            background-size: 24px 24px;
+            position: relative;
         }
-        svg.grafo-svg {
+        svg.house-svg {
             width: 100%;
-            height: 410px;
+            height: 430px;
             display: block;
         }
-        .edge-line {
-            stroke: #1e293b;
-            stroke-width: 3;
-        }
-        .edge-active {
-            stroke: #38bdf8;
-            stroke-width: 4.5;
-            stroke-dasharray: 8 5;
-            animation: dashMove 1.2s linear infinite;
-        }
-        @keyframes dashMove {
-            to { stroke-dashoffset: -26; }
-        }
-        .edge-weight {
-            fill: #64748b;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-        }
-        .node-circle {
-            fill: #0f172a;
-            stroke: #2563eb;
-            stroke-width: 2.5;
-            cursor: pointer;
-            transition: r 0.2s;
-        }
-        .node-current {
-            fill: #1d4ed8;
-            stroke: #38bdf8;
+        .corridor-line {
+            stroke: #26354d;
             stroke-width: 4;
         }
-        .node-blocked {
-            fill: #450a0a;
-            stroke: #ef4444;
-            stroke-width: 3;
+        .corridor-active {
+            stroke: #38bdf8;
+            stroke-width: 6;
+            stroke-dasharray: 10 6;
+            animation: flowDash 1s linear infinite;
         }
-        .node-restricted {
-            stroke: #f59e0b;
+        @keyframes flowDash {
+            to { stroke-dashoffset: -32; }
         }
-        .node-code {
-            fill: #ffffff;
+        .dist-badge {
+            fill: #0f172a;
+            stroke: #334155;
+            stroke-width: 1;
+        }
+        .dist-text {
+            fill: #94a3b8;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 700;
-            text-anchor: middle;
-            dominant-baseline: middle;
-            pointer-events: none;
-        }
-        .node-title {
-            fill: #cbd5e1;
-            font-size: 11px;
-            font-weight: 500;
-            text-anchor: middle;
-            pointer-events: none;
-        }
-        .route-banner {
-            margin-top: 12px;
-            padding: 11px 14px;
-            border-radius: 10px;
-            background: var(--bg-sub);
-            border: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-        }
-        .route-path {
-            color: var(--blue-glow);
+            font-size: 10.5px;
             font-weight: 700;
         }
-        .btn {
-            padding: 9px 14px;
-            border-radius: 9px;
-            border: 1px solid var(--border);
-            background: var(--bg-sub);
-            color: #e2e8f0;
-            font-family: inherit;
-            font-size: 12.5px;
-            font-weight: 600;
+        .room-group {
             cursor: pointer;
+        }
+        .room-box {
+            fill: #131c2e;
+            stroke: #3b82f6;
+            stroke-width: 2.2;
+            rx: 12;
             transition: all 0.15s;
         }
-        .btn:hover {
-            border-color: var(--blue-glow);
-            color: #fff;
+        .room-group:hover .room-box {
+            fill: #1b2842;
+            stroke: #38bdf8;
+            stroke-width: 3;
         }
-        .btn-blue {
-            background: var(--blue-primary);
-            border-color: #3b82f6;
-            color: #fff;
+        .room-box-active {
+            fill: #1d4ed8 !important;
+            stroke: #38bdf8 !important;
+            stroke-width: 3.5 !important;
         }
-        .btn-blue:hover {
-            background: #1d4ed8;
+        .room-box-blocked {
+            fill: #3b0d0d !important;
+            stroke: #ef4444 !important;
+            stroke-width: 2.8 !important;
         }
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.15);
-            border-color: rgba(239, 68, 68, 0.4);
-            color: #fca5a5;
+        .room-box-restricted {
+            stroke: #f59e0b;
         }
-        .room-list {
+        .room-code-txt {
+            fill: #38bdf8;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        .room-box-active + .room-code-txt {
+            fill: #ffffff;
+        }
+        .room-name-txt {
+            fill: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        .room-status-txt {
+            fill: #94a3b8;
+            font-size: 10px;
+            font-weight: 600;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        .rooms-list {
             display: flex;
             flex-direction: column;
-            gap: 9px;
+            gap: 10px;
         }
-        .room-row {
-            background: var(--bg-sub);
+        .room-item {
+            background: var(--bg-item);
             border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px 12px;
+            border-radius: 12px;
+            padding: 12px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
-        .room-info strong {
-            font-size: 13px;
+        .room-item-active {
+            border-color: var(--blue-bright);
+            background: rgba(37, 99, 235, 0.16);
+        }
+        .room-item-blocked {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(69, 10, 10, 0.35);
+        }
+        .room-meta strong {
             display: block;
+            font-size: 13.5px;
+            color: #fff;
+            margin-bottom: 3px;
         }
-        .room-info span {
+        .room-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
             font-size: 11px;
-            color: var(--muted);
-            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
         }
+        .tag-free { color: #34d399; }
+        .tag-closed { color: #f87171; }
+        .tag-admin { color: #fbbf24; }
         .bottom-grid {
             display: grid;
             grid-template-columns: 1.2fr 0.8fr;
             gap: 20px;
             margin-bottom: 22px;
         }
-        @media (max-width: 960px) {
+        @media (max-width: 980px) {
             .bottom-grid { grid-template-columns: 1fr; }
         }
-        .mission-card {
-            background: var(--bg-sub);
+        .task-card {
+            background: var(--bg-item);
             border: 1px solid var(--border);
-            border-radius: 11px;
-            padding: 13px 15px;
+            border-radius: 12px;
+            padding: 14px 16px;
             margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 12px;
         }
-        .prio-tag {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 3px 8px;
+        .prio-badge {
+            padding: 4px 9px;
             border-radius: 6px;
-            background: rgba(37, 99, 235, 0.22);
-            color: var(--blue-glow);
-        }
-        .status-done {
-            color: var(--green-ok);
             font-size: 11px;
+            font-weight: 800;
             font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
+            background: rgba(37, 99, 235, 0.25);
+            color: var(--blue-bright);
+            border: 1px solid rgba(56, 189, 248, 0.35);
         }
-        .status-wait {
-            color: #f59e0b;
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-        }
-        .form-stack {
+        .form-grid {
             display: grid;
-            gap: 11px;
+            gap: 12px;
         }
-        .row-2 {
+        .two-cols {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
         }
         label {
             display: block;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
-            color: #94a3b8;
-            margin-bottom: 4px;
-            text-transform: uppercase;
+            color: var(--text-gray);
+            margin-bottom: 5px;
         }
         input[type="text"], select {
             width: 100%;
-            padding: 9px 12px;
+            padding: 10px 12px;
             border-radius: 9px;
             border: 1px solid var(--border);
-            background: var(--bg-sub);
+            background: #0b0f17;
             color: #fff;
             font-family: inherit;
-            font-size: 13px;
+            font-size: 13.5px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--blue-bright);
         }
     </style>
 </head>
 <body>
-    <header class="header">
+    <header class="topbar">
         <div class="brand">
-            <div class="brand-badge">R2</div>
+            <div class="brand-icon">🤖</div>
             <div>
-                <h1>NAVBOT 2050 // PATHFINDING EM GRAFO</h1>
-                <span>Algoritmo de Dijkstra · Fila de Prioridade · Pilha LIFO · POO</span>
+                <h1>NavBot 2050 — Simulador do Robô Doméstico</h1>
+                <span>Planta da Casa em Grafo · Menor Caminho (Dijkstra) · Fila de Prioridade · Pilha (Desfazer)</span>
             </div>
         </div>
-        <div class="operator-bar">
-            <span>Operador: <strong>{{ usuario.nome_exibicao }}</strong></span>
-            <span class="role-chip">{{ usuario.perfil }}</span>
-            <a class="btn-logout" href="{{ url_for('logout') }}">Trocar Conta</a>
+        <div class="user-controls">
+            <span>Logado como: <strong>{{ usuario.nome_exibicao }}</strong></span>
+            <span class="profile-pill">
+                {{ '👑 Administrador' if usuario.perfil == 'administrador' else '👤 Visitante (Restrito)' }}
+            </span>
+            <a class="btn-top" href="{{ url_for('logout') }}">Trocar de Conta / Sair</a>
         </div>
     </header>
 
     <main class="container">
+        <section class="how-to-bar">
+            <div class="how-step">
+                <div class="how-num">1</div>
+                <div>
+                    <strong>Clique em um Cômodo na Planta</strong>
+                    Clique direto em qualquer cômodo do mapa abaixo para o robô calcular a rota mais curta e ir até lá.
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="how-num">2</div>
+                <div>
+                    <strong>Teste Fechar um Cômodo (Obstáculo)</strong>
+                    Na lista à direita, clique em <em>"Fechar"</em> (ex: na Sala) e mande o robô ir ao Jardim para vê-lo desviar sozinho!
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="how-num">3</div>
+                <div>
+                    <strong>Execute Tarefas ou Desfaça Passos</strong>
+                    Use o botão <em>"Executar Tarefa Mais Urgente"</em> na Fila ou clique em <em>"Desfazer Movimento"</em> no topo.
+                </div>
+            </div>
+        </section>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
-              <div class="flash-msg {{ 'flash-err' if category == 'erro' else 'flash-ok' }}">
-                {{ message }}
+              <div class="flash-banner {{ 'flash-err' if category == 'erro' else 'flash-ok' }}">
+                <span>{{ '⚠️' if category == 'erro' else '✅' }}</span>
+                <span>{{ message }}</span>
               </div>
             {% endfor %}
           {% endif %}
         {% endwith %}
 
-        <section class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-label">Posição Atual no Grafo</div>
-                <div class="kpi-val">{{ robo.no_atual }}</div>
+        <section class="status-strip">
+            <div class="stat-box">
+                <span class="stat-label">📍 Onde o Robô está agora</span>
+                <div class="stat-value">{{ mapa_comodos[robo.no_atual].nome }} ({{ robo.no_atual }})</div>
+                <span class="stat-sub">Distância total percorrida: {{ robo.distancia_acumulada_m }} metros</span>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Bateria da Unidade (POO)</div>
-                <div class="kpi-val">{{ robo.bateria_pct }}%</div>
+
+            <div class="stat-box">
+                <span class="stat-label">🧭 Último Caminho Calculado (Dijkstra)</span>
+                <div class="stat-value" style="font-size: 15.5px; color: var(--blue-bright); font-family: 'JetBrains Mono', monospace;">
+                    {{ robo.ultima_rota }}
+                </div>
+                <span class="stat-sub">Passos salvos para desfazer (Pilha): {{ total_pilha }}</span>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Distância Percorrida</div>
-                <div class="kpi-val">{{ robo.distancia_acumulada_m }} m</div>
+
+            <div class="stat-box">
+                <span class="stat-label">🔋 Bateria do Robô: {{ robo.bateria_pct }}%</span>
+                <div class="battery-bar">
+                    <div class="battery-fill" style="width: {{ robo.bateria_pct }}%;"></div>
+                </div>
+                <span class="stat-sub">Tarefas pendentes na Fila: {{ fila_atual|length }}</span>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Pilha LIFO / Fila Prioridade</div>
-                <div class="kpi-val">{{ total_pilha }} / {{ fila_atual|length }}</div>
+
+            <div class="quick-actions-box">
+                <form method="POST" action="{{ url_for('desfazer_passo_pilha') }}">
+                    <button type="submit" class="btn" title="Desempilha o último passo e volta ao cômodo anterior">
+                        ↩ Desfazer Movimento ({{ total_pilha }})
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('recarregar_base') }}">
+                    <button type="submit" class="btn btn-primary">
+                        ⚡ Voltar à Base (100%)
+                    </button>
+                </form>
             </div>
         </section>
 
-        <section class="main-layout">
-            <div class="panel">
-                <div class="panel-top">
-                    <h2>Planta da Residência 2050 — Topologia em Grafo Ponderado</h2>
-                    <div style="display:flex; gap:8px;">
-                        <form method="POST" action="{{ url_for('recarregar_base') }}">
-                            <button type="submit" class="btn">⚡ Retornar à BASE (100%)</button>
-                        </form>
-                        <form method="POST" action="{{ url_for('desfazer_passo_pilha') }}">
-                            <button type="submit" class="btn">↩ Desfazer Rota (Pilha LIFO: {{ total_pilha }})</button>
-                        </form>
+        <form id="formClickMapa" method="POST" action="{{ url_for('navegar_dijkstra') }}" style="display:none;">
+            <input type="hidden" name="destino" id="inputDestinoMapa" value="SALA">
+        </form>
+
+        <section class="workspace-grid">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>🏠 Planta da Casa (Clique em qualquer cômodo para enviar o robô)</h2>
+                        <p>As linhas mostram os corredores com a distância em metros. A linha tracejada azul é a rota calculada.</p>
                     </div>
                 </div>
 
-                <div class="map-canvas">
-                    <svg class="grafo-svg" viewBox="0 0 700 400">
+                <div class="legend-row">
+                    <span class="legend-item"><span class="dot" style="background:#1d4ed8; border:1px solid #38bdf8;"></span> Cômodo Atual do Robô</span>
+                    <span class="legend-item"><span class="dot" style="background:#131c2e; border:1px solid #3b82f6;"></span> Cômodo Livre (Clique para ir)</span>
+                    <span class="legend-item"><span class="dot" style="background:#3b0d0d; border:1px solid #ef4444;"></span> Cômodo Fechado (Obstáculo)</span>
+                    <span class="legend-item"><span class="dot" style="background:#131c2e; border:1px solid #f59e0b;"></span> Área Restrita (Só Admin)</span>
+                </div>
+
+                <div class="floorplan-wrap">
+                    <svg class="house-svg" viewBox="0 0 700 410">
                         {% for a in arestas %}
                           {% set c1 = mapa_comodos[a.origem] %}
                           {% set c2 = mapa_comodos[a.destino] %}
                           {% set mx = (c1.pos_x + c2.pos_x) // 2 %}
                           {% set my = (c1.pos_y + c2.pos_y) // 2 %}
+                          {% set ns = namespace(ativo=false) %}
+                          {% for i in range(rota_nos|length - 1) %}
+                            {% if (rota_nos[i] == a.origem and rota_nos[i+1] == a.destino) or (rota_nos[i] == a.destino and rota_nos[i+1] == a.origem) %}
+                              {% set ns.ativo = true %}
+                            {% endif %}
+                          {% endfor %}
                           <line
                               x1="{{ c1.pos_x }}" y1="{{ c1.pos_y }}"
                               x2="{{ c2.pos_x }}" y2="{{ c2.pos_y }}"
-                              class="edge-line {{ 'edge-active' if (a.origem in rota_nos and a.destino in rota_nos) else '' }}"
+                              class="corridor-line {{ 'corridor-active' if ns.ativo else '' }}"
                           />
-                          <rect x="{{ mx - 18 }}" y="{{ my - 9 }}" width="36" height="16" rx="4" fill="#050912" stroke="#172542" />
-                          <text x="{{ mx }}" y="{{ my + 3 }}" text-anchor="middle" class="edge-weight">{{ a.metros }}m</text>
+                          <rect x="{{ mx - 20 }}" y="{{ my - 10 }}" width="40" height="18" rx="5" class="dist-badge" />
+                          <text x="{{ mx }}" y="{{ my + 3 }}" text-anchor="middle" class="dist-text">{{ a.metros }}m</text>
                         {% endfor %}
 
                         {% for c in comodos %}
-                          <g>
-                            <circle
-                                cx="{{ c.pos_x }}" cy="{{ c.pos_y }}" r="24"
-                                class="node-circle
-                                  {{ 'node-current' if robo.no_atual == c.codigo else '' }}
-                                  {{ 'node-blocked' if c.bloqueado else '' }}
-                                  {{ 'node-restricted' if c.restrito_admin and not c.bloqueado else '' }}"
+                          <g class="room-group" onclick="irParaComodo('{{ c.codigo }}')">
+                            <rect
+                                x="{{ c.pos_x - 62 }}" y="{{ c.pos_y - 28 }}"
+                                width="124" height="56"
+                                class="room-box
+                                  {{ 'room-box-active' if robo.no_atual == c.codigo else '' }}
+                                  {{ 'room-box-blocked' if c.bloqueado else '' }}
+                                  {{ 'room-box-restricted' if c.restrito_admin and not c.bloqueado else '' }}"
                             />
-                            <text x="{{ c.pos_x }}" y="{{ c.pos_y }}" class="node-code">{{ c.codigo }}</text>
-                            <text x="{{ c.pos_x }}" y="{{ c.pos_y + 38 }}" class="node-title">
-                                {{ c.nome }}{{ ' [BLOQUEADO]' if c.bloqueado else '' }}
+                            <text x="{{ c.pos_x }}" y="{{ c.pos_y - 9 }}" class="room-code-txt">
+                                {{ '🤖 ' if robo.no_atual == c.codigo else '' }}{{ c.codigo }}{{ ' 🔒' if c.restrito_admin else '' }}
+                            </text>
+                            <text x="{{ c.pos_x }}" y="{{ c.pos_y + 7 }}" class="room-name-txt">
+                                {{ c.nome[:18] }}
+                            </text>
+                            <text x="{{ c.pos_x }}" y="{{ c.pos_y + 21 }}" class="room-status-txt">
+                                {{ '⛔ FECHADO' if c.bloqueado else ('📍 ROBÔ AQUI' if robo.no_atual == c.codigo else 'Clique para ir') }}
                             </text>
                           </g>
                         {% endfor %}
 
-                        <circle id="roboMarker" cx="{{ mapa_comodos[robo.no_atual].pos_x }}" cy="{{ mapa_comodos[robo.no_atual].pos_y }}" r="10" fill="#38bdf8">
-                            <animate attributeName="r" values="8;13;8" dur="1.4s" repeatCount="indefinite" />
+                        <circle id="roboMarker" cx="{{ mapa_comodos[robo.no_atual].pos_x }}" cy="{{ mapa_comodos[robo.no_atual].pos_y - 28 }}" r="9" fill="#38bdf8" stroke="#ffffff" stroke-width="2">
+                            <animate attributeName="r" values="7;11;7" dur="1.2s" repeatCount="indefinite" />
                         </circle>
                     </svg>
                 </div>
-
-                <div class="route-banner">
-                    <div>
-                        <span>ÚLTIMO CAMINHO MÍNIMO (DIJKSTRA): </span>
-                        <span class="route-path">{{ robo.ultima_rota }}</span>
-                    </div>
-                    <span style="color:var(--muted);">Azul = Robô · Vermelho = Obstáculo · Amarelo = Restrito Admin</span>
-                </div>
             </div>
 
-            <div class="panel">
-                <div class="panel-top">
-                    <h2>Controle de Nós &amp; Obstáculos</h2>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>🚪 Cômodos &amp; Portas da Casa</h2>
+                        <p>Envie o robô ou feche um cômodo para testar o desvio de rota.</p>
+                    </div>
                 </div>
-                <div class="room-list">
+
+                <div class="rooms-list">
                     {% for c in comodos %}
-                    <div class="room-row">
-                        <div class="room-info">
-                            <strong>{{ c.codigo }} — {{ c.nome }}</strong>
-                            <span>
-                                {{ '🔒 Área Restrita Admin' if c.restrito_admin else 'Área Comum' }}
-                                {{ ' · ⛔ INTERDITADO' if c.bloqueado else ' · Livre' }}
-                            </span>
+                    <div class="room-item {{ 'room-item-active' if robo.no_atual == c.codigo else '' }} {{ 'room-item-blocked' if c.bloqueado else '' }}">
+                        <div class="room-meta">
+                            <strong>{{ c.nome }} ({{ c.codigo }})</strong>
+                            <div class="room-tags">
+                                {% if robo.no_atual == c.codigo %}
+                                  <span style="color:var(--blue-bright);">🤖 Robô está aqui</span>
+                                {% elif c.bloqueado %}
+                                  <span class="tag-closed">🔴 Fechado (Obstáculo)</span>
+                                {% else %}
+                                  <span class="tag-free">🟢 Aberto / Livre</span>
+                                {% endif %}
+                                {% if c.restrito_admin %}
+                                  <span class="tag-admin">· 🔒 Só Admin</span>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div style="display:flex; gap:6px;">
+
+                        <div style="display:flex; gap:6px; flex-shrink:0;">
+                            {% if robo.no_atual != c.codigo %}
                             <form method="POST" action="{{ url_for('navegar_dijkstra') }}">
                                 <input type="hidden" name="destino" value="{{ c.codigo }}">
-                                <button type="submit" class="btn btn-blue">Ir (Dijkstra)</button>
+                                <button type="submit" class="btn btn-primary" style="padding: 8px 12px; font-size: 12px;">
+                                    Ir até aqui
+                                </button>
                             </form>
+                            {% endif %}
+
                             {% if usuario.perfil == 'administrador' and c.codigo != 'BASE' %}
                             <form method="POST" action="{{ url_for('alternar_obstaculo', codigo=c.codigo) }}">
-                                <button type="submit" class="btn {{ 'btn-danger' if not c.bloqueado else '' }}">
-                                    {{ 'Liberar' if c.bloqueado else 'Bloquear' }}
+                                <button type="submit" class="btn {{ 'btn-green' if c.bloqueado else 'btn-red' }}" style="padding: 8px 11px; font-size: 12px;">
+                                    {{ 'Abrir' if c.bloqueado else 'Fechar' }}
                                 </button>
                             </form>
                             {% endif %}
@@ -541,40 +721,47 @@
         </section>
 
         <section class="bottom-grid">
-            <div class="panel">
-                <div class="panel-top">
-                    <h2>Fila de Prioridade de Missões do Robô</h2>
-                    <div style="display:flex; gap:8px;">
-                        <form method="POST" action="{{ url_for('carregar_fila') }}">
-                            <button type="submit" class="btn">Enfileirar Pendentes</button>
-                        </form>
-                        <form method="POST" action="{{ url_for('executar_proxima_fila') }}">
-                            <button type="submit" class="btn btn-blue">Executar Próxima da Fila ({{ fila_atual|length }})</button>
-                        </form>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>📋 Fila de Tarefas do Robô (Ordenada por Prioridade)</h2>
+                        <p>As tarefas mais urgentes (Prioridade P5) ficam no topo e são executadas primeiro.</p>
                     </div>
+                    <form method="POST" action="{{ url_for('executar_proxima_fila') }}">
+                        <button type="submit" class="btn btn-primary">
+                            ▶ Executar Tarefa Mais Urgente Agora ({{ fila_atual|length }} na fila)
+                        </button>
+                    </form>
                 </div>
 
                 {% for m in missoes %}
-                <div class="mission-card">
+                <div class="task-card">
                     <div>
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                            <span class="prio-tag">P{{ m.prioridade }}</span>
-                            <strong>{{ m.titulo }}</strong>
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px; flex-wrap:wrap;">
+                            <span class="prio-badge">Prioridade P{{ m.prioridade }}</span>
+                            <strong style="font-size:14px;">{{ m.titulo }}</strong>
                         </div>
-                        <div style="font-size:12px; color:var(--muted); font-family:'JetBrains Mono', monospace;">
-                            {{ m.origem }} &rarr; {{ m.destino }} · {{ m.descricao_operacao() }}
+                        <div style="font-size:12.5px; color:var(--text-dim);">
+                            De <strong>{{ mapa_comodos[m.origem].nome }} ({{ m.origem }})</strong> para <strong>{{ mapa_comodos[m.destino].nome }} ({{ m.destino }})</strong>
+                            · {{ m.descricao_operacao() }}
                             {% if m.rota_calculada %}
-                              · Rota: <span style="color:var(--blue-glow);">{{ m.rota_calculada }} ({{ m.distancia_metros }}m)</span>
+                              <div style="margin-top:4px; color:var(--blue-bright); font-family:'JetBrains Mono', monospace; font-size:12px;">
+                                  ✓ Menor rota feita: {{ m.rota_calculada }} ({{ m.distancia_metros }}m)
+                              </div>
                             {% endif %}
                         </div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span class="{{ 'status-done' if m.status == 'concluida' else 'status-wait' }}">
-                            {{ m.status|upper }}
-                        </span>
+
+                    <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                        {% if m.status == 'concluida' %}
+                            <span style="color:var(--green); font-size:12px; font-weight:700;">✅ Concluída</span>
+                        {% else %}
+                            <span style="color:var(--amber); font-size:12px; font-weight:700;">⏳ Na Fila</span>
+                        {% endif %}
+
                         {% if usuario.perfil == 'administrador' %}
                         <form method="POST" action="{{ url_for('excluir_missao', id_missao=m.id_missao) }}">
-                            <button type="submit" class="btn btn-danger" style="padding:5px 9px;">✕</button>
+                            <button type="submit" class="btn btn-red" style="padding:6px 10px;" title="Excluir tarefa">✕</button>
                         </form>
                         {% endif %}
                     </div>
@@ -582,77 +769,105 @@
                 {% endfor %}
             </div>
 
-            <div class="panel">
-                <div class="panel-top">
-                    <h2>Nova Missão para o Robô (POO + Validação)</h2>
-                </div>
-                <form method="POST" action="{{ url_for('nova_missao') }}" class="form-stack">
+            <div class="card">
+                <div class="card-header">
                     <div>
-                        <label>Descrição da Missão</label>
-                        <input type="text" name="titulo" placeholder="Ex: Entregar kit médico na Suíte" required>
+                        <h2>➕ Adicionar Nova Tarefa para o Robô</h2>
+                        <p>Cadastre uma missão e ela entrará automaticamente na Fila de Prioridade.</p>
                     </div>
-                    <div class="row-2">
+                </div>
+
+                <form method="POST" action="{{ url_for('nova_missao') }}" class="form-grid">
+                    <div>
+                        <label>O que o robô deve fazer?</label>
+                        <input type="text" name="titulo" placeholder="Ex: Levar água gelada para a Sala" required>
+                    </div>
+
+                    <div class="two-cols">
                         <div>
-                            <label>Classe POO da Missão</label>
+                            <label>Tipo de Tarefa (POO)</label>
                             <select name="tipo">
-                                <option value="entrega">MissaoEntrega (Carga)</option>
-                                <option value="limpeza">MissaoLimpeza (UV)</option>
-                                <option value="patrulha">MissaoPatrulha (Só Admin)</option>
-                                <option value="emergencia">MissaoEmergencia (Só Admin)</option>
+                                <option value="entrega">📦 Entrega de Item</option>
+                                <option value="limpeza">✨ Limpeza &amp; Higienização</option>
+                                <option value="patrulha">🛡️ Inspeção (Só Admin)</option>
+                                <option value="emergencia">🚨 Emergência (Só Admin)</option>
                             </select>
                         </div>
                         <div>
-                            <label>Prioridade (1 a 5)</label>
-                            <input type="text" name="prioridade" value="3" required>
+                            <label>Urgência / Prioridade</label>
+                            <select name="prioridade">
+                                <option value="5">5 — Urgente (Máxima)</option>
+                                <option value="4">4 — Alta</option>
+                                <option value="3" selected>3 — Normal</option>
+                                <option value="2">2 — Baixa</option>
+                                <option value="1">1 — Mínima</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="row-2">
+
+                    <div class="two-cols">
                         <div>
-                            <label>Nó de Origem</label>
+                            <label>Sair de qual cômodo?</label>
                             <select name="origem">
                                 {% for c in comodos %}
-                                <option value="{{ c.codigo }}">{{ c.codigo }} — {{ c.nome }}</option>
+                                <option value="{{ c.codigo }}" {{ 'selected' if c.codigo == robo.no_atual else '' }}>{{ c.nome }} ({{ c.codigo }})</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div>
-                            <label>Nó de Destino</label>
+                            <label>Ir para qual cômodo?</label>
                             <select name="destino">
                                 {% for c in comodos %}
-                                <option value="{{ c.codigo }}" {{ 'selected' if c.codigo == 'SALA' else '' }}>{{ c.codigo }} — {{ c.nome }}</option>
+                                <option value="{{ c.codigo }}" {{ 'selected' if c.codigo == 'SALA' else '' }}>{{ c.nome }} ({{ c.codigo }})</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
+
                     <div>
-                        <label>Peso da Carga em kg (Validação Numérica)</label>
-                        <input type="text" name="carga_kg" value="1.5" required>
+                        <label>Peso do item em kg (Digite apenas números, ex: 1.5)</label>
+                        <input type="text" name="carga_kg" value="1.0" required>
                     </div>
-                    <button type="submit" class="btn btn-blue" style="padding:12px;">Cadastrar Missão no SQLite</button>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">
+                        Adicionar Tarefa na Fila
+                    </button>
                 </form>
             </div>
         </section>
 
-        <section class="panel">
-            <div class="panel-top">
-                <h2>Log de Telemetria, Dijkstra &amp; Auditoria de Acesso (SQLite)</h2>
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>📜 Histórico de Movimentos e Segurança (Salvo no Banco SQLite)</h2>
+                    <p>Mostra todas as rotas calculadas pelo robô e bloqueios de segurança.</p>
+                </div>
             </div>
             {% for l in logs %}
-            <div class="mission-card" style="margin-bottom:8px;">
-                <div>
-                    <strong style="color:var(--blue-glow);">{{ l.usuario }}</strong>
-                    <span style="font-size:11px; color:var(--muted);">[{{ l.perfil }}]</span> — {{ l.evento }}
+            <div class="task-card" style="margin-bottom:8px; padding:11px 14px;">
+                <div style="font-size:13px;">
+                    <strong style="color:var(--blue-bright);">{{ l.usuario }}</strong>
+                    <span style="font-size:11.5px; color:var(--text-dim);">({{ l.perfil }})</span> — {{ l.evento }}
                 </div>
-                <span style="font-size:11px; color:var(--muted); font-family:'JetBrains Mono', monospace;">{{ l.data_hora }}</span>
+                <span style="font-size:11.5px; color:var(--text-dim); font-family:'JetBrains Mono', monospace;">{{ l.data_hora }}</span>
             </div>
             {% endfor %}
         </section>
     </main>
 
     <script>
+        function irParaComodo(codigo) {
+            const input = document.getElementById("inputDestinoMapa");
+            const form = document.getElementById("formClickMapa");
+            if (input && form) {
+                input.value = codigo;
+                form.submit();
+            }
+        }
+
         const coords = {
             {% for c in comodos %}
-            "{{ c.codigo }}": { x: {{ c.pos_x }}, y: {{ c.pos_y }} },
+            "{{ c.codigo }}": { x: {{ c.pos_x }}, y: {{ c.pos_y - 28 }} },
             {% endfor %}
         };
         const rotaAtiva = {{ rota_nos | tojson }};
@@ -669,7 +884,7 @@
                 }
                 idx++;
                 if (idx < rotaAtiva.length) {
-                    setTimeout(animarPasso, 420);
+                    setTimeout(animarPasso, 380);
                 }
             }
             animarPasso();

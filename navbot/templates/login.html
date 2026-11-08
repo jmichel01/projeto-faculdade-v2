@@ -3,286 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NavBot 2050 — Login do Terminal de Navegação</title>
+    <title>NavBot 2050 — Controle do Robô Doméstico</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #04070d;
-            --bg-card: #0a101d;
-            --bg-input: #060a12;
-            --border-blue: #172542;
-            --primary-blue: #2563eb;
-            --electric-blue: #38bdf8;
-            --text-main: #f1f5f9;
-            --text-muted: #64748b;
+            --bg-body: #090c12;
+            --bg-card: #111622;
+            --bg-box: #161d2d;
+            --border: #243047;
+            --blue-main: #2563eb;
+            --blue-hover: #3b82f6;
+            --blue-light: #38bdf8;
+            --text-white: #ffffff;
+            --text-gray: #cbd5e1;
+            --text-dim: #94a3b8;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background-color: var(--bg-deep);
-            color: var(--text-main);
+            background-color: var(--bg-body);
+            color: var(--text-white);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px;
-            background-image:
-                radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.16), transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.10), transparent 40%),
-                linear-gradient(rgba(23, 37, 66, 0.22) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(23, 37, 66, 0.22) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+            padding: 20px;
+            background-image: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.22), transparent 55%);
         }
-        .login-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border-blue);
-            border-radius: 18px;
+        .login-wrapper {
             width: 100%;
-            max-width: 900px;
+            max-width: 940px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
             display: grid;
-            grid-template-columns: 1.1fr 1fr;
+            grid-template-columns: 1.05fr 0.95fr;
             overflow: hidden;
-            box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(56, 189, 248, 0.08);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
         }
-        @media (max-width: 780px) {
-            .login-container { grid-template-columns: 1fr; }
-            .hero-pane { display: none; }
+        @media (max-width: 820px) {
+            .login-wrapper { grid-template-columns: 1fr; }
         }
-        .hero-pane {
-            background: linear-gradient(160deg, #070d19 0%, #0b1730 100%);
-            border-right: 1px solid var(--border-blue);
-            padding: 42px;
+        .info-side {
+            padding: 40px;
+            background: linear-gradient(160deg, #0d1320 0%, #131d33 100%);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            gap: 24px;
         }
-        .sys-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        .badge-top {
+            display: inline-block;
             padding: 6px 12px;
-            border-radius: 6px;
-            background: rgba(37, 99, 235, 0.18);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            color: var(--electric-blue);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
+            border-radius: 8px;
+            background: rgba(37, 99, 235, 0.2);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: var(--blue-light);
+            font-size: 12px;
+            font-weight: 700;
             width: fit-content;
         }
-        .hero-pane h2 {
-            font-size: 27px;
+        .info-side h1 {
+            font-size: 28px;
             line-height: 1.25;
-            margin-bottom: 12px;
-            color: #fff;
+            margin-top: 14px;
+            margin-bottom: 10px;
+            font-weight: 800;
         }
-        .hero-pane p {
-            color: #94a3b8;
-            font-size: 14px;
+        .info-side p {
+            color: var(--text-gray);
+            font-size: 14.5px;
             line-height: 1.6;
         }
-        .specs-grid {
+        .steps-list {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 24px;
+            gap: 12px;
+            margin-top: 20px;
         }
-        .spec-card {
-            background: rgba(4, 7, 13, 0.65);
-            border: 1px solid var(--border-blue);
-            border-radius: 10px;
-            padding: 12px;
+        .step-item {
+            background: rgba(9, 12, 18, 0.65);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 13px 15px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
         }
-        .spec-card span {
-            display: block;
-            font-size: 11px;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .spec-card strong {
+        .step-num {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: var(--blue-main);
+            color: #fff;
+            font-weight: 700;
             font-size: 13px;
-            color: var(--electric-blue);
-            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .step-item strong {
+            display: block;
+            font-size: 13.5px;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+        .step-item span {
+            font-size: 12.5px;
+            color: var(--text-dim);
+            line-height: 1.45;
             display: block;
         }
-        .form-pane {
-            padding: 42px;
+        .form-side {
+            padding: 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
-        .form-pane h1 {
-            font-size: 23px;
+        .form-side h2 {
+            font-size: 22px;
+            font-weight: 800;
             margin-bottom: 6px;
         }
-        .form-pane .sub {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 24px;
+        .form-side .sub {
+            font-size: 13.5px;
+            color: var(--text-dim);
+            margin-bottom: 22px;
         }
-        .alert-erro {
-            background: rgba(239, 68, 68, 0.14);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: #fca5a5;
-            padding: 11px 14px;
+        .alert-msg {
+            background: rgba(239, 68, 68, 0.16);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #fecaca;
+            padding: 12px 14px;
             border-radius: 10px;
             font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 18px;
+        }
+        .quick-section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--blue-light);
+            margin-bottom: 10px;
+        }
+        .quick-forms {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+        .btn-quick-admin {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid #3b82f6;
+            background: linear-gradient(90deg, #1d4ed8, #2563eb);
+            color: #fff;
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+            transition: transform 0.12s, background 0.15s;
+        }
+        .btn-quick-admin:hover {
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            transform: translateY(-1px);
+        }
+        .btn-quick-guest {
+            width: 100%;
+            padding: 13px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-box);
+            color: #fff;
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .btn-quick-guest:hover {
+            border-color: var(--blue-light);
+            background: #1c2539;
+        }
+        .q-left strong {
+            display: block;
+            font-size: 14.5px;
+            margin-bottom: 2px;
+        }
+        .q-left span {
+            font-size: 12px;
+            color: #dbeafe;
+            opacity: 0.85;
+        }
+        .q-arrow {
+            font-weight: 700;
+            font-size: 13px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.14);
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dim);
+            font-size: 12px;
             margin-bottom: 16px;
+        }
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border);
         }
         label {
             display: block;
             font-size: 12px;
             font-weight: 600;
-            color: #94a3b8;
+            color: var(--text-gray);
             margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-        input {
+        input[type="text"], input[type="password"] {
             width: 100%;
-            padding: 12px 14px;
+            padding: 11px 14px;
             border-radius: 10px;
-            border: 1px solid var(--border-blue);
-            background: var(--bg-input);
+            border: 1px solid var(--border);
+            background: #0b0f17;
             color: #fff;
             font-family: inherit;
             font-size: 14px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
         input:focus {
             outline: none;
-            border-color: var(--electric-blue);
+            border-color: var(--blue-light);
         }
-        .btn-login {
+        .btn-manual {
             width: 100%;
-            padding: 13px;
+            padding: 12px;
             border-radius: 10px;
-            border: none;
-            background: linear-gradient(90deg, #1d4ed8, #2563eb);
+            border: 1px solid var(--border);
+            background: var(--bg-box);
             color: #fff;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13.5px;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
         }
-        .btn-login:hover {
-            background: linear-gradient(90deg, #2563eb, #3b82f6);
-        }
-        .quick-box {
-            margin-top: 24px;
-            padding-top: 18px;
-            border-top: 1px solid var(--border-blue);
-        }
-        .quick-title {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-        .quick-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .q-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border-blue);
-            border-radius: 10px;
-            padding: 10px 12px;
-            color: #cbd5e1;
-            font-family: inherit;
-            font-size: 12px;
-            cursor: pointer;
-            text-align: left;
-        }
-        .q-btn:hover {
-            border-color: var(--electric-blue);
-            background: rgba(37, 99, 235, 0.12);
-        }
-        .q-btn strong {
-            display: block;
-            color: #fff;
-            margin-bottom: 2px;
+        .btn-manual:hover {
+            border-color: var(--blue-light);
+            background: #1e293b;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="hero-pane">
-            <div class="sys-tag">NAVBOT R-2050 // PATHFINDING OS</div>
+    <div class="login-wrapper">
+        <div class="info-side">
             <div>
-                <h2>Simulador de Navegação em Grafo &amp; Missões Domésticas</h2>
-                <p>Planejamento autônomo de rotas na planta residencial utilizando o algoritmo de Dijkstra, Fila de Prioridade de Missões e Pilha LIFO de retorno.</p>
-                <div class="specs-grid">
-                    <div class="spec-card">
-                        <span>ALGORITMO DE ROTA</span>
-                        <strong>Dijkstra Shortest Path</strong>
+                <span class="badge-top">🤖 ROBÔ DOMÉSTICO AUTÔNOMO · CASA 2050</span>
+                <h1>Simulador de Rotas na Planta da Casa</h1>
+                <p>Controle um robô inteligente dentro de uma casa com 8 cômodos. Ele calcula sozinho o caminho mais curto e desvia de portas fechadas.</p>
+
+                <div class="steps-list">
+                    <div class="step-item">
+                        <div class="step-num">1</div>
+                        <div>
+                            <strong>Clique em qualquer Cômodo no Mapa</strong>
+                            <span>O algoritmo de Dijkstra calcula na hora a menor rota em metros e move o robô pela planta.</span>
+                        </div>
                     </div>
-                    <div class="spec-card">
-                        <span>ESTRUTURAS</span>
-                        <strong>Grafo + Fila + Pilha</strong>
+                    <div class="step-item">
+                        <div class="step-num">2</div>
+                        <div>
+                            <strong>Feche Cômodos para Simular Obstáculos</strong>
+                            <span>Tranque um cômodo (ex: Sala) e veja o robô recalcular o caminho passando por outro corredor.</span>
+                        </div>
                     </div>
-                    <div class="spec-card">
-                        <span>ORIENTAÇÃO OBJETOS</span>
-                        <strong>4 Classes Polimórficas</strong>
-                    </div>
-                    <div class="spec-card">
-                        <span>PERSISTÊNCIA</span>
-                        <strong>SQLite Relacional</strong>
+                    <div class="step-item">
+                        <div class="step-num">3</div>
+                        <div>
+                            <strong>Fila de Prioridade &amp; Desfazer Passo</strong>
+                            <span>Execute tarefas da mais urgente (P5) para a mais simples (P1) ou desfaça o último movimento.</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div style="font-size: 12px; color: #475569; font-family: 'JetBrains Mono', monospace;">
-                CIÊNCIA DA COMPUTAÇÃO · 4º SEMESTRE · EXPOTECH 2026.2
+            <div style="font-size: 12px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;">
+                Ciência da Computação · 4º Semestre · Python + Flask + SQLite
             </div>
         </div>
 
-        <div class="form-pane">
-            <h1>Autenticação do Operador</h1>
-            <p class="sub">Entre com sua credencial para controlar o robô na planta da casa</p>
+        <div class="form-side">
+            <h2>Como você quer entrar?</h2>
+            <p class="sub">Clique em um dos perfis abaixo para abrir o simulador imediatamente:</p>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
               {% if messages %}
                 {% for category, message in messages %}
-                  <div class="alert-erro">{{ message }}</div>
+                  <div class="alert-msg">{{ message }}</div>
                 {% endfor %}
               {% endif %}
             {% endwith %}
 
-            <form method="POST" action="{{ url_for('login') }}" id="formAuth">
-                <label>Usuário</label>
-                <input type="text" id="inUser" name="username" required placeholder="admin ou convidado">
-
-                <label>Senha</label>
-                <input type="password" id="inPass" name="senha" required placeholder="••••">
-
-                <button type="submit" class="btn-login">Iniciar Terminal de Navegação</button>
-            </form>
-
-            <div class="quick-box">
-                <div class="quick-title">Acesso em 1 clique para demonstração:</div>
-                <div class="quick-grid">
-                    <button type="button" class="q-btn" onclick="acessoRapido('admin','1234')">
-                        <strong>Perfil Administrador</strong>
-                        <span>admin / 1234 (Acesso Total)</span>
+            <div class="quick-section-title">⚡ Acesso Rápido em 1 Clique (Recomendado):</div>
+            <div class="quick-forms">
+                <form method="POST" action="{{ url_for('login') }}">
+                    <input type="hidden" name="username" value="admin">
+                    <input type="hidden" name="senha" value="1234">
+                    <button type="submit" class="btn-quick-admin">
+                        <div class="q-left">
+                            <strong>👑 Entrar como Administrador (Morador)</strong>
+                            <span>Acesso total: fechar cômodos, entrar no Escritório/Garagem e criar tarefas</span>
+                        </div>
+                        <span class="q-arrow">Entrar &rarr;</span>
                     </button>
-                    <button type="button" class="q-btn" onclick="acessoRapido('convidado','1234')">
-                        <strong>Perfil Visitante</strong>
-                        <span>convidado / 1234 (Restrito)</span>
+                </form>
+
+                <form method="POST" action="{{ url_for('login') }}">
+                    <input type="hidden" name="username" value="convidado">
+                    <input type="hidden" name="senha" value="1234">
+                    <button type="submit" class="btn-quick-guest">
+                        <div class="q-left">
+                            <strong>👤 Entrar como Visitante (Acesso Comum)</strong>
+                            <span>Acesso restrito: só navega em áreas sociais (bloqueado no Escritório e Garagem)</span>
+                        </div>
+                        <span class="q-arrow">Entrar &rarr;</span>
                     </button>
-                </div>
+                </form>
             </div>
+
+            <div class="divider">ou digite manualmente</div>
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <label>Usuário (admin ou convidado)</label>
+                <input type="text" name="username" value="admin" required>
+
+                <label>Senha (1234)</label>
+                <input type="password" name="senha" value="1234" required>
+
+                <button type="submit" class="btn-manual">Fazer Login Manual</button>
+            </form>
         </div>
     </div>
-
-    <script>
-        function acessoRapido(u, p) {
-            document.getElementById('inUser').value = u;
-            document.getElementById('inPass').value = p;
-            document.getElementById('formAuth').submit();
-        }
-    </script>
 </body>
 </html>
