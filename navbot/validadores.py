@@ -1,33 +1,38 @@
 from typing import Tuple
 
 
-def validar_dados_missao(
-    titulo: str,
-    origem: str,
-    destino: str,
-    prioridade_str: str,
-    carga_str: str,
-) -> Tuple[bool, str, int, float]:
-    if len(titulo.strip()) < 3:
-        return False, "A descrição da missão deve ter pelo menos 3 caracteres.", 1, 0.0
+class ErroValidacaoDados(ValueError):
+    pass
 
-    if origem == destino:
-        return False, "O cômodo de destino deve ser diferente do cômodo de origem.", 1, 0.0
 
+def validar_numero_inteiro(
+    valor_str: str,
+    nome_campo: str,
+    minimo: int,
+    maximo: int,
+) -> int:
+    texto = str(valor_str).strip()
     try:
-        prioridade = int(prioridade_str.strip())
-    except ValueError:
-        return False, "Erro de validação: a prioridade (1 a 5) deve ser um número inteiro.", 1, 0.0
+        numero = int(float(texto.replace(",", ".")))
+    except ValueError as exc:
+        raise ErroValidacaoDados(
+            f"Erro de validação: o campo '{nome_campo}' aceita apenas números (você digitou '{texto}')."
+        ) from exc
 
-    if prioridade < 1 or prioridade > 5:
-        return False, "A prioridade deve estar entre 1 (Baixa) e 5 (Urgente).", 1, 0.0
+    if numero < minimo or numero > maximo:
+        raise ErroValidacaoDados(
+            f"Valor fora do limite: '{nome_campo}' deve ficar entre {minimo} e {maximo}."
+        )
 
-    try:
-        carga = float(carga_str.strip().replace(",", "."))
-    except ValueError:
-        return False, "Erro de validação: o peso da carga (kg) deve ser um valor numérico.", 1, 0.0
+    return numero
 
-    if carga < 0.0 or carga > 25.0:
-        return False, "O limite de carga do robô é de 0 kg até 25 kg.", 1, 0.0
 
-    return True, "", prioridade, round(carga, 2)
+def validar_item_geladeira(nome_item: str, qtd_str: str) -> Tuple[str, int]:
+    limpo = str(nome_item).strip()
+    if len(limpo) < 2:
+        raise ErroValidacaoDados(
+            "Informe o nome do produto para colocar na geladeira (mínimo 2 letras)."
+        )
+
+    qtd = validar_numero_inteiro(qtd_str, "Quantidade do item", 1, 99)
+    return limpo, qtd

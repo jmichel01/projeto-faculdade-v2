@@ -2,18 +2,18 @@ from datetime import datetime
 import os
 from pathlib import Path
 import sqlite3
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 from werkzeug.security import check_password_hash, generate_password_hash
-from navbot.modelos import MissaoRobo, instanciar_missao
+from navbot.modelos import DispositivoCasa, instanciar_dispositivo
 
 
 def obter_caminho_banco() -> Path:
     if os.environ.get("VERCEL"):
-        return Path("/tmp/robo2050.db")
-    return Path(__file__).parent.parent / "robo2050.db"
+        return Path("/tmp/smarthome2050.db")
+    return Path(__file__).parent.parent / "smarthome2050.db"
 
 
-class BancoNavBot:
+class BancoSmartHome:
     def __init__(self, caminho_banco: Path | None = None) -> None:
         self.caminho_banco = caminho_banco or obter_caminho_banco()
         self.inicializar_tabelas()
@@ -35,43 +35,40 @@ class BancoNavBot:
                 "perfil TEXT NOT NULL)"
             )
             cursor.execute(
-                "CREATE TABLE IF NOT EXISTS comodos_grafo ("
+                "CREATE TABLE IF NOT EXISTS comodos ("
                 "codigo TEXT PRIMARY KEY, "
                 "nome TEXT NOT NULL, "
-                "pos_x INTEGER NOT NULL, "
-                "pos_y INTEGER NOT NULL, "
-                "bloqueado INTEGER NOT NULL DEFAULT 0, "
+                "descricao TEXT NOT NULL, "
+                "ordem INTEGER NOT NULL)"
+            )
+            cursor.execute(
+                "CREATE TABLE IF NOT EXISTS dispositivos ("
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                "comodo_codigo TEXT NOT NULL, "
+                "nome TEXT NOT NULL, "
+                "categoria TEXT NOT NULL, "
+                "ligado INTEGER NOT NULL DEFAULT 1, "
+                "valor_num REAL NOT NULL DEFAULT 20.0, "
+                "modo_atual TEXT NOT NULL DEFAULT '', "
+                "detalhe_extra TEXT NOT NULL DEFAULT '', "
                 "restrito_admin INTEGER NOT NULL DEFAULT 0)"
             )
             cursor.execute(
-                "CREATE TABLE IF NOT EXISTS estado_robo ("
-                "id INTEGER PRIMARY KEY CHECK (id = 1), "
-                "nome_robo TEXT NOT NULL, "
-                "no_atual TEXT NOT NULL, "
-                "bateria_pct REAL NOT NULL, "
-                "ultima_rota TEXT NOT NULL, "
-                "distancia_acumulada_m REAL NOT NULL)"
-            )
-            cursor.execute(
-                "CREATE TABLE IF NOT EXISTS missoes ("
+                "CREATE TABLE IF NOT EXISTS itens_geladeira ("
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                "titulo TEXT NOT NULL, "
-                "tipo TEXT NOT NULL, "
-                "origem TEXT NOT NULL, "
-                "destino TEXT NOT NULL, "
-                "prioridade INTEGER NOT NULL, "
-                "carga_kg REAL NOT NULL DEFAULT 0.0, "
-                "status TEXT NOT NULL DEFAULT 'pendente', "
-                "rota_calculada TEXT NOT NULL DEFAULT '', "
-                "distancia_metros REAL NOT NULL DEFAULT 0.0)"
+                "nome_item TEXT NOT NULL, "
+                "quantidade INTEGER NOT NULL, "
+                "unidade TEXT NOT NULL, "
+                "categoria_item TEXT NOT NULL, "
+                "validade_status TEXT NOT NULL)"
             )
             cursor.execute(
-                "CREATE TABLE IF NOT EXISTS telemetria_logs ("
+                "CREATE TABLE IF NOT EXISTS historico_eventos ("
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 "data_hora TEXT NOT NULL, "
                 "usuario TEXT NOT NULL, "
                 "perfil TEXT NOT NULL, "
-                "evento TEXT NOT NULL)"
+                "acao TEXT NOT NULL)"
             )
             conn.commit()
             self._popular_dados_iniciais(conn)
@@ -84,48 +81,77 @@ class BancoNavBot:
             guest_user = os.environ.get("NAVBOT_GUEST_USER", "convidado")
             guest_pass = os.environ.get("NAVBOT_GUEST_PASS", "1234")
             usuarios = [
-                (admin_user, "Engenheiro / Morador Admin", generate_password_hash(admin_pass), "administrador"),
-                (guest_user, "Visitante / Morador Comum", generate_password_hash(guest_pass), "comum"),
+                (admin_user, "Morador Principal (Admin)", generate_password_hash(admin_pass), "administrador"),
+                (guest_user, "Visitante / Convidado", generate_password_hash(guest_pass), "comum"),
             ]
             cursor.executemany(
                 "INSERT INTO usuarios (username, nome_exibicao, senha_hash, perfil) VALUES (?, ?, ?, ?)",
                 usuarios,
             )
 
-        if cursor.execute("SELECT COUNT(*) FROM comodos_grafo").fetchone()[0] == 0:
+        if cursor.execute("SELECT COUNT(*) FROM comodos").fetchone()[0] == 0:
             comodos = [
-                ("BASE", "Base de Recarga Central", 380, 210, 0, 0),
-                ("SALA", "Sala de Estar", 200, 120, 0, 0),
-                ("COZ", "Cozinha Automatizada", 200, 300, 0, 0),
-                ("Q1", "Suíte Principal", 560, 110, 0, 0),
-                ("Q2", "Quarto de Hóspedes", 380, 70, 0, 0),
-                ("LAB", "Servidor IA & Escritório", 600, 240, 0, 1),
-                ("GAR", "Oficina & Garagem V2X", 450, 340, 0, 1),
-                ("JAR", "Jardim & Domo Solar", 80, 210, 0, 0),
+                ("SALA", "Sala de Estar", "TV 8K, Ar-Condicionado, Som Ambiente, Luzes e Porta Principal", 1),
+                ("COZ", "Cozinha", "Geladeira Inteligente (Estoque Interno), Climatização e Iluminação", 2),
+                ("SUITE", "Suíte Principal", "Ar-Condicionado, TV do Quarto, Som Relaxante, Luzes e Fechadura", 3),
+                ("QUARTO2", "Quarto de Hóspedes", "TV / Monitor Gamer, Ar-Condicionado, Som Bluetooth e Luz LED", 4),
+                ("EXTERNA", "Segurança & Garagem", "Central de Câmeras Ao Vivo, Portão Eletrônico e Luzes Externas", 5),
             ]
             cursor.executemany(
-                "INSERT INTO comodos_grafo (codigo, nome, pos_x, pos_y, bloqueado, restrito_admin) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO comodos (codigo, nome, descricao, ordem) VALUES (?, ?, ?, ?)",
                 comodos,
             )
 
-        if cursor.execute("SELECT COUNT(*) FROM estado_robo").fetchone()[0] == 0:
-            cursor.execute(
-                "INSERT INTO estado_robo (id, nome_robo, no_atual, bateria_pct, ultima_rota, distancia_acumulada_m) "
-                "VALUES (1, 'Unidade Autônoma R-2050', 'BASE', 94.0, 'BASE -> SALA -> COZ', 28.5)"
-            )
-
-        if cursor.execute("SELECT COUNT(*) FROM missoes").fetchone()[0] == 0:
-            missoes = [
-                ("Levar bandeja de café para Hóspedes", "entrega", "COZ", "Q2", 3, 2.5, "pendente", "", 0.0),
-                ("Higienização UV na Sala de Estar", "limpeza", "BASE", "SALA", 2, 0.0, "pendente", "", 0.0),
-                ("Inspeção de Sensores no Servidor IA", "patrulha", "BASE", "LAB", 5, 0.0, "pendente", "", 0.0),
+        if cursor.execute("SELECT COUNT(*) FROM dispositivos").fetchone()[0] == 0:
+            dispositivos = [
+                ("SALA", "Smart TV 75\" Sala", "tv", 1, 45, "Netflix — Série Sci-Fi", "4K HDR Ativo", 0),
+                ("SALA", "Ar-Condicionado da Sala", "ar", 1, 22, "Frio", "Inverter Dual", 0),
+                ("SALA", "Som Ambiente Dolby", "som", 1, 50, "Spotify — Rock Clássico", "Subwoofer Ativo", 0),
+                ("SALA", "Luzes do Teto da Sala", "luz", 1, 85, "Branco Quente", "Dimmer Inteligente", 0),
+                ("SALA", "Porta Social de Entrada", "porta", 1, 1, "Trancada com Biometria", "Fechadura Digital", 1),
+                ("SALA", "Câmera Interna da Sala", "camera", 1, 1, "Ao Vivo 1080p", "Ambiente interno normal · Sem alerta", 1),
+                ("COZ", "Geladeira Smart Vision", "geladeira", 1, 3, "Super Refrigeração", "Filtro de água 98%", 0),
+                ("COZ", "Ar-Condicionado da Cozinha", "ar", 1, 23, "Ventilar", "Anti-odor ativo", 0),
+                ("COZ", "Iluminação de Bancada & Teto", "luz", 1, 100, "Branco Frio", "LED Econômico", 0),
+                ("COZ", "Som Ambiente da Cozinha", "som", 0, 35, "Rádio Notícias / Podcast", "Bluetooth Pronto", 0),
+                ("COZ", "Câmera da Cozinha", "camera", 1, 1, "Ao Vivo HD", "Fogão desligado · Ambiente seguro", 1),
+                ("SUITE", "Ar-Condicionado da Suíte", "ar", 1, 20, "Sono Silencioso", "Timer Noturno", 0),
+                ("SUITE", "Smart TV 65\" da Suíte", "tv", 0, 30, "HBO Max — Filmes", "Modo Cinema", 0),
+                ("SUITE", "Som de Cabeceira", "som", 1, 25, "Som de Chuva & Relaxamento", "Timer 60 min", 0),
+                ("SUITE", "Luz Indireta da Suíte", "luz", 1, 40, "Luz Suave Noturna", "Conforto Visual", 0),
+                ("SUITE", "Porta Privativa da Suíte", "porta", 1, 1, "Trancada pelo Morador", "Acesso Exclusivo", 1),
+                ("QUARTO2", "Smart TV & Console Hóspedes", "tv", 1, 55, "PlayStation 6 / HDMI 1", "120Hz Modo Jogo", 0),
+                ("QUARTO2", "Ar-Condicionado Hóspedes", "ar", 0, 24, "Eco", "Economia de Energia", 0),
+                ("QUARTO2", "Luz Principal & Fita LED", "luz", 1, 90, "Azul Ambiente", "Sincronizado com TV", 0),
+                ("QUARTO2", "Caixa de Som Bluetooth", "som", 0, 40, "Lo-Fi Chill Beats", "Pareado", 0),
+                ("EXTERNA", "Câmera 01 — Portão da Rua", "camera", 1, 1, "Visão Noturna 4K", "Calçada livre · Gravação contínua", 1),
+                ("EXTERNA", "Câmera 02 — Garagem", "camera", 1, 1, "Detector de Movimento IA", "Veículo estacionado · Portão fechado", 1),
+                ("EXTERNA", "Câmera 03 — Quintal & Muro", "camera", 1, 1, "Infravermelho Perímetro", "Sensores de muro normais · Sem intrusão", 1),
+                ("EXTERNA", "Portão Eletrônico da Garagem", "porta", 1, 1, "Trancado com Travas Duplas", "Motor Rápido", 1),
+                ("EXTERNA", "Porta Lateral de Serviço", "porta", 1, 1, "Trancada", "Sensor Magnético Ativo", 1),
+                ("EXTERNA", "Refletores LED da Fachada", "luz", 1, 100, "Automático por Presença", "Fotocélula Ativa", 0),
             ]
             cursor.executemany(
-                "INSERT INTO missoes "
-                "(titulo, tipo, origem, destino, prioridade, carga_kg, status, rota_calculada, distancia_metros) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                missoes,
+                "INSERT INTO dispositivos "
+                "(comodo_codigo, nome, categoria, ligado, valor_num, modo_atual, detalhe_extra, restrito_admin) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                dispositivos,
+            )
+
+        if cursor.execute("SELECT COUNT(*) FROM itens_geladeira").fetchone()[0] == 0:
+            itens = [
+                ("Leite Integral", 3, "caixas", "Laticínios", "Fresco · Validade OK"),
+                ("Refrigerante Zero Lata", 6, "latas", "Bebidas", "Gelado (3°C)"),
+                ("Água Mineral com Gás", 4, "garrafas", "Bebidas", "Gelado (3°C)"),
+                ("Peito de Frango / Filé", 2, "bandejas", "Carnes & Proteínas", "Conservado"),
+                ("Morangos & Uvas Lavadas", 2, "potes", "Frutas & Verduras", "Fresco"),
+                ("Queijo Mussarela Fatiado", 1, "pacote", "Laticínios", "Aberto há 2 dias"),
+                ("Suco Natural de Laranja", 2, "garrafas", "Bebidas", "Pronto para consumo"),
+            ]
+            cursor.executemany(
+                "INSERT INTO itens_geladeira (nome_item, quantidade, unidade, categoria_item, validade_status) "
+                "VALUES (?, ?, ?, ?, ?)",
+                itens,
             )
         conn.commit()
 
@@ -146,118 +172,107 @@ class BancoNavBot:
 
     def listar_comodos(self) -> List[Dict[str, object]]:
         with self._conectar() as conn:
-            rows = conn.execute(
-                "SELECT codigo, nome, pos_x, pos_y, bloqueado, restrito_admin FROM comodos_grafo ORDER BY codigo"
-            ).fetchall()
+            rows = conn.execute("SELECT codigo, nome, descricao, ordem FROM comodos ORDER BY ordem").fetchall()
             return [dict(r) for r in rows]
 
-    def buscar_comodo(self, codigo: str) -> Optional[Dict[str, object]]:
+    def listar_dispositivos(self, comodo_codigo: Optional[str] = None) -> List[DispositivoCasa]:
+        with self._conectar() as conn:
+            if comodo_codigo:
+                rows = conn.execute(
+                    "SELECT id, comodo_codigo, nome, categoria, ligado, valor_num, modo_atual, detalhe_extra, restrito_admin "
+                    "FROM dispositivos WHERE comodo_codigo = ? ORDER BY id",
+                    (comodo_codigo,),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT id, comodo_codigo, nome, categoria, ligado, valor_num, modo_atual, detalhe_extra, restrito_admin "
+                    "FROM dispositivos ORDER BY id"
+                ).fetchall()
+            return [instanciar_dispositivo(dict(r)) for r in rows]
+
+    def listar_por_categoria(self, categoria: str) -> List[DispositivoCasa]:
+        with self._conectar() as conn:
+            rows = conn.execute(
+                "SELECT id, comodo_codigo, nome, categoria, ligado, valor_num, modo_atual, detalhe_extra, restrito_admin "
+                "FROM dispositivos WHERE categoria = ? ORDER BY id",
+                (categoria,),
+            ).fetchall()
+            return [instanciar_dispositivo(dict(r)) for r in rows]
+
+    def buscar_dispositivo(self, id_disp: int) -> Optional[DispositivoCasa]:
         with self._conectar() as conn:
             row = conn.execute(
-                "SELECT codigo, nome, pos_x, pos_y, bloqueado, restrito_admin FROM comodos_grafo WHERE codigo = ?",
-                (codigo,),
+                "SELECT id, comodo_codigo, nome, categoria, ligado, valor_num, modo_atual, detalhe_extra, restrito_admin "
+                "FROM dispositivos WHERE id = ?",
+                (id_disp,),
             ).fetchone()
-            return dict(row) if row else None
+            return instanciar_dispositivo(dict(row)) if row else None
 
-    def obter_conjunto_bloqueados(self) -> Set[str]:
-        with self._conectar() as conn:
-            rows = conn.execute("SELECT codigo FROM comodos_grafo WHERE bloqueado = 1").fetchall()
-            return {str(r["codigo"]) for r in rows}
-
-    def alternar_bloqueio_comodo(self, codigo: str) -> bool:
-        with self._conectar() as conn:
-            row = conn.execute("SELECT bloqueado FROM comodos_grafo WHERE codigo = ?", (codigo,)).fetchone()
-            if not row:
-                return False
-            novo = 0 if row["bloqueado"] else 1
-            conn.execute("UPDATE comodos_grafo SET bloqueado = ? WHERE codigo = ?", (novo, codigo))
-            conn.commit()
-            return bool(novo)
-
-    def obter_estado_robo(self) -> Dict[str, object]:
-        with self._conectar() as conn:
-            row = conn.execute(
-                "SELECT nome_robo, no_atual, bateria_pct, ultima_rota, distancia_acumulada_m FROM estado_robo WHERE id = 1"
-            ).fetchone()
-            return dict(row)
-
-    def atualizar_estado_robo(
+    def atualizar_dispositivo(
         self,
-        no_atual: str,
-        bateria_pct: float,
-        ultima_rota: str,
-        distancia_adicional: float,
+        id_disp: int,
+        ligado: bool,
+        valor_num: float,
+        modo_atual: str,
     ) -> None:
         with self._conectar() as conn:
             conn.execute(
-                "UPDATE estado_robo SET no_atual = ?, bateria_pct = ?, ultima_rota = ?, "
-                "distancia_acumulada_m = ROUND(distancia_acumulada_m + ?, 2) WHERE id = 1",
-                (no_atual, round(max(0.0, min(100.0, bateria_pct)), 1), ultima_rota, distancia_adicional),
+                "UPDATE dispositivos SET ligado = ?, valor_num = ?, modo_atual = ? WHERE id = ?",
+                (1 if ligado else 0, valor_num, modo_atual, id_disp),
             )
             conn.commit()
 
-    def listar_missoes(self) -> List[MissaoRobo]:
+    def listar_itens_geladeira(self) -> List[Dict[str, object]]:
         with self._conectar() as conn:
             rows = conn.execute(
-                "SELECT id, titulo, tipo, origem, destino, prioridade, carga_kg, status, rota_calculada, distancia_metros "
-                "FROM missoes ORDER BY prioridade DESC, id DESC"
+                "SELECT id, nome_item, quantidade, unidade, categoria_item, validade_status "
+                "FROM itens_geladeira ORDER BY categoria_item, nome_item"
             ).fetchall()
-            return [instanciar_missao(dict(r)) for r in rows]
+            return [dict(r) for r in rows]
 
-    def buscar_missao(self, id_missao: int) -> Optional[MissaoRobo]:
-        with self._conectar() as conn:
-            row = conn.execute(
-                "SELECT id, titulo, tipo, origem, destino, prioridade, carga_kg, status, rota_calculada, distancia_metros "
-                "FROM missoes WHERE id = ?",
-                (id_missao,),
-            ).fetchone()
-            return instanciar_missao(dict(row)) if row else None
-
-    def cadastrar_missao(
+    def adicionar_item_geladeira(
         self,
-        titulo: str,
-        tipo: str,
-        origem: str,
-        destino: str,
-        prioridade: int,
-        carga_kg: float,
-    ) -> int:
-        with self._conectar() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO missoes (titulo, tipo, origem, destino, prioridade, carga_kg, status) "
-                "VALUES (?, ?, ?, ?, ?, ?, 'pendente')",
-                (titulo, tipo, origem, destino, prioridade, carga_kg),
-            )
-            conn.commit()
-            return int(cursor.lastrowid or 0)
-
-    def concluir_missao(self, id_missao: int, rota_str: str, distancia: float) -> None:
+        nome_item: str,
+        quantidade: int,
+        unidade: str,
+        categoria_item: str,
+    ) -> None:
         with self._conectar() as conn:
             conn.execute(
-                "UPDATE missoes SET status = 'concluida', rota_calculada = ?, distancia_metros = ? WHERE id = ?",
-                (rota_str, distancia, id_missao),
+                "INSERT INTO itens_geladeira (nome_item, quantidade, unidade, categoria_item, validade_status) "
+                "VALUES (?, ?, ?, ?, 'Fresco · Adicionado agora')",
+                (nome_item, quantidade, unidade, categoria_item),
             )
             conn.commit()
 
-    def excluir_missao(self, id_missao: int) -> None:
+    def alterar_quantidade_geladeira(self, id_item: int, delta: int) -> None:
         with self._conectar() as conn:
-            conn.execute("DELETE FROM missoes WHERE id = ?", (id_missao,))
+            row = conn.execute("SELECT quantidade FROM itens_geladeira WHERE id = ?", (id_item,)).fetchone()
+            if not row:
+                return
+            nova_qtd = int(row["quantidade"]) + delta
+            if nova_qtd <= 0:
+                conn.execute("DELETE FROM itens_geladeira WHERE id = ?", (id_item,))
+            else:
+                conn.execute("UPDATE itens_geladeira SET quantidade = ? WHERE id = ?", (nova_qtd, id_item))
             conn.commit()
 
-    def registrar_log(self, usuario: str, perfil: str, evento: str) -> None:
+    def registrar_log(self, usuario: str, perfil: str, acao: str) -> None:
         agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         with self._conectar() as conn:
             conn.execute(
-                "INSERT INTO telemetria_logs (data_hora, usuario, perfil, evento) VALUES (?, ?, ?, ?)",
-                (agora, usuario, perfil, evento),
+                "INSERT INTO historico_eventos (data_hora, usuario, perfil, acao) VALUES (?, ?, ?, ?)",
+                (agora, usuario, perfil, acao),
             )
             conn.commit()
 
     def listar_logs(self, limite: int = 12) -> List[Dict[str, object]]:
         with self._conectar() as conn:
             rows = conn.execute(
-                "SELECT id, data_hora, usuario, perfil, evento FROM telemetria_logs ORDER BY id DESC LIMIT ?",
+                "SELECT id, data_hora, usuario, perfil, acao FROM historico_eventos ORDER BY id DESC LIMIT ?",
                 (limite,),
             ).fetchall()
             return [dict(r) for r in rows]
+
+
+BancoNavBot = BancoSmartHome

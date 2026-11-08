@@ -1,128 +1,173 @@
-class MissaoRobo:
+class DispositivoCasa:
     def __init__(
         self,
-        id_missao: int,
-        titulo: str,
-        tipo: str,
-        origem: str,
-        destino: str,
-        prioridade: int,
-        carga_kg: float = 0.0,
-        status: str = "pendente",
-        rota_calculada: str = "",
-        distancia_metros: float = 0.0,
+        id_disp: int,
+        comodo_codigo: str,
+        nome: str,
+        categoria: str,
+        ligado: bool,
+        valor_num: float,
+        modo_atual: str,
+        detalhe_extra: str,
+        restrito_admin: bool = False,
     ) -> None:
-        self._id_missao = id_missao
-        self._titulo = titulo
-        self._tipo = tipo
-        self._origem = origem
-        self._destino = destino
-        self._prioridade = max(1, min(5, int(prioridade)))
-        self._carga_kg = max(0.0, float(carga_kg))
-        self._status = status
-        self._rota_calculada = rota_calculada
-        self._distancia_metros = max(0.0, float(distancia_metros))
+        self._id_disp = int(id_disp)
+        self._comodo_codigo = str(comodo_codigo)
+        self._nome = str(nome)
+        self._categoria = str(categoria)
+        self._ligado = bool(ligado)
+        self._valor_num = float(valor_num)
+        self._modo_atual = str(modo_atual)
+        self._detalhe_extra = str(detalhe_extra)
+        self._restrito_admin = bool(restrito_admin)
 
     @property
-    def id_missao(self) -> int:
-        return self._id_missao
+    def id_disp(self) -> int:
+        return self._id_disp
 
     @property
-    def titulo(self) -> str:
-        return self._titulo
+    def comodo_codigo(self) -> str:
+        return self._comodo_codigo
 
     @property
-    def tipo(self) -> str:
-        return self._tipo
+    def nome(self) -> str:
+        return self._nome
 
     @property
-    def origem(self) -> str:
-        return self._origem
+    def categoria(self) -> str:
+        return self._categoria
 
     @property
-    def destino(self) -> str:
-        return self._destino
+    def ligado(self) -> bool:
+        return self._ligado
+
+    @ligado.setter
+    def ligado(self, novo_estado: bool) -> None:
+        self._ligado = bool(novo_estado)
 
     @property
-    def prioridade(self) -> int:
-        return self._prioridade
+    def valor_num(self) -> float:
+        return self._valor_num
 
     @property
-    def carga_kg(self) -> float:
-        return self._carga_kg
+    def valor_int(self) -> int:
+        return int(round(self._valor_num))
 
     @property
-    def status(self) -> str:
-        return self._status
+    def modo_atual(self) -> str:
+        return self._modo_atual
 
     @property
-    def rota_calculada(self) -> str:
-        return self._rota_calculada
+    def detalhe_extra(self) -> str:
+        return self._detalhe_extra
 
     @property
-    def distancia_metros(self) -> float:
-        return self._distancia_metros
+    def restrito_admin(self) -> bool:
+        return self._restrito_admin
 
-    def calcular_gasto_bateria(self, metros: float) -> float:
-        return round(metros * 0.8, 1)
+    def consumo_watts(self) -> int:
+        return 15 if self._ligado else 0
 
-    def descricao_operacao(self) -> str:
-        return "Deslocamento Padrão"
-
-
-class MissaoEntrega(MissaoRobo):
-    def calcular_gasto_bateria(self, metros: float) -> float:
-        fator_peso = 1.0 + (self._carga_kg * 0.18)
-        return round(metros * 0.9 * fator_peso, 1)
-
-    def descricao_operacao(self) -> str:
-        return f"Transporte de Carga ({self._carga_kg} kg)"
+    def resumo_estado(self) -> str:
+        return "Ligado" if self._ligado else "Desligado"
 
 
-class MissaoLimpeza(MissaoRobo):
-    def calcular_gasto_bateria(self, metros: float) -> float:
-        return round((metros * 0.7) + 6.5, 1)
+class ArCondicionado(DispositivoCasa):
+    def consumo_watts(self) -> int:
+        if not self._ligado:
+            return 0
+        esforco = max(1, int(26 - self._valor_num))
+        return 650 + (esforco * 55)
 
-    def descricao_operacao(self) -> str:
-        return "Higienização UV + Aspiração"
-
-
-class MissaoPatrulha(MissaoRobo):
-    def calcular_gasto_bateria(self, metros: float) -> float:
-        return round((metros * 1.1) + 4.0, 1)
-
-    def descricao_operacao(self) -> str:
-        return "Varredura Térmica & Sensores"
+    def resumo_estado(self) -> str:
+        if not self._ligado:
+            return "Desligado"
+        return f"Ligado · {self.valor_int}°C · Modo {self._modo_atual}"
 
 
-class MissaoEmergencia(MissaoRobo):
-    def calcular_gasto_bateria(self, metros: float) -> float:
-        return round((metros * 1.45) + 5.0, 1)
+class SmartTV(DispositivoCasa):
+    def consumo_watts(self) -> int:
+        return 140 if self._ligado else 2
 
-    def descricao_operacao(self) -> str:
-        return "Resposta Rápida Prioridade P5"
+    def resumo_estado(self) -> str:
+        if not self._ligado:
+            return "Em Standby (Desligada)"
+        return f"Ligada · Canal/App: {self._modo_atual} · Volume {self.valor_int}%"
 
 
-def instanciar_missao(dados: dict) -> MissaoRobo:
-    tipo = dados["tipo"]
-    argumentos = {
-        "id_missao": dados["id"],
-        "titulo": dados["titulo"],
-        "tipo": tipo,
-        "origem": dados["origem"],
-        "destino": dados["destino"],
-        "prioridade": dados["prioridade"],
-        "carga_kg": dados["carga_kg"],
-        "status": dados["status"],
-        "rota_calculada": dados["rota_calculada"],
-        "distancia_metros": dados["distancia_metros"],
+class GeladeiraSmart(DispositivoCasa):
+    def consumo_watts(self) -> int:
+        if not self._ligado:
+            return 0
+        return 220 if self._valor_num <= 2 else 170
+
+    def resumo_estado(self) -> str:
+        return f"Refrigeração Ativa · {self.valor_int}°C · Modo {self._modo_atual}"
+
+
+class SistemaSom(DispositivoCasa):
+    def consumo_watts(self) -> int:
+        if not self._ligado:
+            return 0
+        return 35 + int(self._valor_num * 0.6)
+
+    def resumo_estado(self) -> str:
+        if not self._ligado:
+            return "Silenciado / Desligado"
+        return f"Tocando: {self._modo_atual} · Volume {self.valor_int}%"
+
+
+class Iluminacao(DispositivoCasa):
+    def consumo_watts(self) -> int:
+        if not self._ligado:
+            return 0
+        return max(5, int(self._valor_num * 0.45))
+
+    def resumo_estado(self) -> str:
+        if not self._ligado:
+            return "Apagada (0%)"
+        return f"Acesa · Intensidade {self.valor_int}% · Tom {self._modo_atual}"
+
+
+class FechaduraPorta(DispositivoCasa):
+    def consumo_watts(self) -> int:
+        return 8
+
+    def resumo_estado(self) -> str:
+        return "TRANCADA (Segura)" if self._ligado else "DESTRANCADA (Aberta)"
+
+
+class CameraSeguranca(DispositivoCasa):
+    def consumo_watts(self) -> int:
+        return 18 if self._ligado else 0
+
+    def resumo_estado(self) -> str:
+        if not self._ligado:
+            return "Câmera Desativada"
+        return f"Gravando Ao Vivo ({self._modo_atual}) · {self._detalhe_extra}"
+
+
+def instanciar_dispositivo(dados: dict) -> DispositivoCasa:
+    cat = str(dados["categoria"])
+    args = {
+        "id_disp": int(dados["id"]),
+        "comodo_codigo": str(dados["comodo_codigo"]),
+        "nome": str(dados["nome"]),
+        "categoria": cat,
+        "ligado": bool(dados["ligado"]),
+        "valor_num": float(dados["valor_num"]),
+        "modo_atual": str(dados["modo_atual"]),
+        "detalhe_extra": str(dados["detalhe_extra"]),
+        "restrito_admin": bool(dados["restrito_admin"]),
     }
-    if tipo == "entrega":
-        return MissaoEntrega(**argumentos)
-    if tipo == "limpeza":
-        return MissaoLimpeza(**argumentos)
-    if tipo == "patrulha":
-        return MissaoPatrulha(**argumentos)
-    if tipo == "emergencia":
-        return MissaoEmergencia(**argumentos)
-    return MissaoRobo(**argumentos)
+    mapa_classes = {
+        "ar": ArCondicionado,
+        "tv": SmartTV,
+        "geladeira": GeladeiraSmart,
+        "som": SistemaSom,
+        "luz": Iluminacao,
+        "porta": FechaduraPorta,
+        "camera": CameraSeguranca,
+    }
+    classe = mapa_classes.get(cat, DispositivoCasa)
+    return classe(**args)

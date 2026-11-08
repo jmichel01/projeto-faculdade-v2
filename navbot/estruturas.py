@@ -1,46 +1,48 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 
-class PilhaNavegacao:
+class PilhaComandos:
     def __init__(self, capacidade: int = 30) -> None:
-        self._passos: List[Dict[str, object]] = []
+        self._itens: List[Dict[str, Any]] = []
         self._capacidade = capacidade
 
-    def empilhar(self, passo: Dict[str, object]) -> None:
-        if len(self._passos) >= self._capacidade:
-            self._passos.pop(0)
-        self._passos.append(passo)
+    def empilhar(self, estado_anterior: Dict[str, Any]) -> None:
+        if len(self._itens) >= self._capacidade:
+            self._itens.pop(0)
+        self._itens.append(estado_anterior)
 
-    def desempilhar(self) -> Optional[Dict[str, object]]:
-        if not self._passos:
-            return None
-        return self._passos.pop()
-
-    def tamanho(self) -> int:
-        return len(self._passos)
-
-    def listar_recentes(self) -> List[Dict[str, object]]:
-        return list(reversed(self._passos))
-
-
-class FilaMissoes:
-    def __init__(self) -> None:
-        self._itens: List[Dict[str, object]] = []
-
-    def limpar(self) -> None:
-        self._itens.clear()
-
-    def enfileirar_com_prioridade(self, missao: Dict[str, object]) -> None:
-        self._itens.append(missao)
-        self._itens.sort(key=lambda item: int(item.get("prioridade", 1)), reverse=True)
-
-    def desenfileirar(self) -> Optional[Dict[str, object]]:
+    def desempilhar(self) -> Optional[Dict[str, Any]]:
         if not self._itens:
             return None
-        return self._itens.pop(0)
+        return self._itens.pop()
 
     def tamanho(self) -> int:
         return len(self._itens)
 
-    def listar_todas(self) -> List[Dict[str, object]]:
+    def esta_vazia(self) -> bool:
+        return len(self._itens) == 0
+
+    def listar_historico(self) -> List[Dict[str, Any]]:
+        return list(reversed(self._itens))
+
+    def listar_todos(self) -> List[Dict[str, Any]]:
         return list(self._itens)
+
+
+class FilaAutomacao:
+    def __init__(self) -> None:
+        self._fila: List[Any] = []
+
+    def enfileirar(self, comando: Any) -> None:
+        self._fila.append(comando)
+
+    def desenfileirar(self) -> Optional[Any]:
+        if not self._fila:
+            return None
+        return self._fila.pop(0)
+
+    def esta_vazia(self) -> bool:
+        return len(self._fila) == 0
+
+    def tamanho(self) -> int:
+        return len(self._fila)

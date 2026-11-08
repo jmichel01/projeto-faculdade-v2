@@ -1,18 +1,79 @@
+from functools import wraps
 import hashlib
 import os
 from pathlib import Path
+from typing import Callable
 from flask import Flask, flash, redirect, render_template, request, session, url_for
-from navbot.banco import BancoNavBot
-from navbot.estruturas import FilaMissoes, PilhaNavegacao
-from navbot.grafo import GrafoPlantaCasa
-from navbot.validadores import validar_dados_missao
+from navbot.banco import BancoSmartHome
+from navbot.estruturas import FilaAutomacao, PilhaComandos
+from navbot.validadores import ErroValidacaoDados, validar_item_geladeira, validar_numero_inteiro
+
+
+OPCOES_MODO = {
+    "tv": [
+        "Netflix — Série Sci-Fi",
+        "YouTube 4K — Tecnologia",
+        "HBO Max — Filmes",
+        "Globo Ao Vivo — Jornalismo",
+        "ESPN HD — Futebol Ao Vivo",
+        "PlayStation 6 / HDMI 1",
+    ],
+    "ar": [
+        "Frio",
+        "Eco (Economia)",
+        "Sono Silencioso",
+        "Ventilar",
+        "Turbo Polar",
+    ],
+    "geladeira": [
+        "Super Refrigeração",
+        "Férias / Eco",
+        "Festa / Bebidas Rápidas",
+        "Padrão Inteligente",
+    ],
+    "som": [
+        "Spotify — Rock Clássico",
+        "Lo-Fi Chill Beats",
+        "Som de Chuva & Relaxamento",
+        "Rádio Notícias / Podcast",
+        "Jazz Instrumental",
+        "Bluetooth Pareado",
+    ],
+    "luz": [
+        "Branco Quente (Conforto)",
+        "Branco Frio (Foco Total)",
+        "Luz Suave Noturna",
+        "Azul Ambiente",
+        "Automático por Presença",
+    ],
+    "porta": [
+        "Trancada com Biometria",
+        "Trancada com Travas Duplas",
+        "Acesso Liberado Internamente",
+        "Modo Entrega / Visitante",
+    ],
+    "camera": [
+        "Ao Vivo 1080p",
+        "Visão Noturna 4K",
+        "Detector de Movimento IA",
+        "Infravermelho Perímetro",
+    ],
+}
+
+LIMITES_CATEGORIA = {
+    "ar": ("Temperatura do Ar-Condicionado", 16, 28),
+    "geladeira": ("Temperatura da Geladeira", -2, 8),
+    "tv": ("Volume da TV", 0, 100),
+    "som": ("Volume do Som", 0, 100),
+    "luz": ("Intensidade da Luz", 0, 100),
+}
 
 
 def obter_chave_sessao() -> str:
     chave_env = os.environ.get("SECRET_KEY")
     if chave_env:
         return chave_env
-    semente = f"navbot-2050-{os.environ.get('VERCEL_GIT_COMMIT_SHA', ' padrao-estavel')}"
+    semente = os.environ.get("VERCEL_PROJECT_ID", "smarthome-2050-chave-estavel-padrao")
     return hashlib.sha256(semente.encode("utf-8")).hexdigest()
 
 
@@ -22,384 +83,448 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
-    banco = BancoNavBot(caminho_banco=caminho_banco)
-    grafo = GrafoPlantaCasa()
-    pilha_nav = PilhaNavegacao()
-    fila_missoes = FilaMissoes()
-
+    banco = BancoSmartHome(caminho_banco)
     app.config["BANCO"] = banco
-    app.config["GRAFO"] = grafo
 
-    def sincronizar_fila_pendentes() -> None:
-        fila_missoes.limpar()
-        for m in banco.listar_missoes():
-            if m.status == "pendente":
-                fila_missoes.enfileirar_com_prioridade(
-                    {
-                        "id_missao": m.id_missao,
-                        "titulo": m.titulo,
-                        "origem": m.origem,
-                        "destino": m.destino,
-                        "prioridade": m.prioridade,
-                    }
-                )
+    def obter_pilha_sessao() -> PilhaComandos:
+        pilha = PilhaComandos()
+        for item in session.get("pilha_comandos", []):
+            if isinstance(item, dict):
+                pilha.empilhar(dict(item))
+        return pilha
 
-    def carregar_pilha_sessao() -> None:
-        historico = session.get("pilha_passos", [])
-        if isinstance(historico, list) and pilha_nav.tamanho() == 0:
-            for item in historico:
-                if isinstance(item, dict):
-                    pilha_nav.empilhar(item)
-
-    def salvar_pilha_sessao() -> None:
-        session["pilha_passos"] = list(reversed(pilha_nav.listar_recentes()))
+    def salvar_pilha_sessao(pilha: PilhaComandos) -> None:
+        session["pilha_comandos"] = list(reversed(pilha.listar_historico()))
         session.modified = True
+
+    def exigir_login(f: Callable) -> Callable:
+        @wraps(f)
+        def decorada(*args, **kwargs):
+            if "usuario" not in session:
+                return redirect(url_for("login"))
+            return f(*args, **kwargs)
+
+        return decorada
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
         if request.method == "POST":
-            username = request.form.get("username", "").strip()
-            senha = request.form.get("senha", "").strip()
-            usuario = banco.autenticar(username, senha)
-            if usuario:
-                session.clear()
-                session["usuario"] = usuario
-                session["pilha_passos"] = []
+            username = request.form.get("username", "")
+            senha = request.form.get("senha", "")
+            user = banco.autenticar(username, senha)
+            if user:
+                session["usuario"] = user
+                session["pilha_comandos"] = []
                 banco.registrar_log(
-                    str(usuario["username"]),
-                    str(usuario["perfil"]),
-                    "Entrou no painel de controle do Robô R-2050.",
+                    user["username"],
+                    user["perfil"],
+                    "Acessou a Central da Casa Inteligente",
                 )
-                flash(f"Bem-vindo, {usuario['nome_exibicao']}!", "sucesso")
                 return redirect(url_for("painel"))
-            flash("Usuário ou senha incorretos. Use admin / 1234 ou convidado / 1234.", "erro")
+            flash("Usuário ou senha inválidos. Utilize os botões de acesso rápido abaixo.", "erro")
         return render_template("login.html")
 
     @app.route("/logout")
     def logout():
-        usuario = session.get("usuario")
-        if usuario:
-            banco.registrar_log(
-                str(usuario["username"]),
-                str(usuario["perfil"]),
-                "Saiu do painel de controle.",
-            )
-        session.clear()
+        user = session.pop("usuario", None)
+        session.pop("pilha_comandos", None)
+        if user:
+            banco.registrar_log(user["username"], user["perfil"], "Encerrou a sessão no painel")
         return redirect(url_for("login"))
 
     @app.route("/")
+    @exigir_login
     def painel():
-        usuario = session.get("usuario")
-        if not usuario:
-            return redirect(url_for("login"))
-
-        carregar_pilha_sessao()
-        sincronizar_fila_pendentes()
-
         comodos = banco.listar_comodos()
-        mapa_comodos = {str(c["codigo"]): c for c in comodos}
-        arestas = grafo.listar_arestas_unicas()
-        robo = banco.obter_estado_robo()
-        missoes = banco.listar_missoes()
-        logs = banco.listar_logs()
+        codigos_validos = [str(c["codigo"]) for c in comodos] + ["TODOS"]
+        comodo_selecionado = request.args.get("comodo", "SALA").upper()
+        if comodo_selecionado not in codigos_validos:
+            comodo_selecionado = "SALA"
 
-        rota_nos = [n.strip() for n in str(robo["ultima_rota"]).split("->") if n.strip()]
+        todos_dispositivos = banco.listar_dispositivos()
+        if comodo_selecionado == "TODOS":
+            dispositivos_visiveis = todos_dispositivos
+            info_comodo = {
+                "codigo": "TODOS",
+                "nome": "Visão Geral de Todos os Cômodos",
+                "descricao": "Todos os 23 equipamentos da residência exibidos simultaneamente",
+            }
+        else:
+            dispositivos_visiveis = [d for d in todos_dispositivos if d.comodo_codigo == comodo_selecionado]
+            info_comodo = next(
+                (c for c in comodos if c["codigo"] == comodo_selecionado),
+                comodos[0],
+            )
+
+        potencia_total_watts = sum(d.consumo_watts() for d in todos_dispositivos)
+        dispositivos_ligados = sum(1 for d in todos_dispositivos if d.ligado)
+
+        ares_ligados = [d for d in todos_dispositivos if d.categoria == "ar" and d.ligado]
+        media_ar = (
+            round(sum(d.valor_num for d in ares_ligados) / len(ares_ligados), 1)
+            if ares_ligados
+            else None
+        )
+
+        luzes = [d for d in todos_dispositivos if d.categoria == "luz"]
+        luzes_acesas = sum(1 for d in luzes if d.ligado)
+
+        portas = [d for d in todos_dispositivos if d.categoria == "porta"]
+        portas_trancadas = sum(1 for d in portas if d.ligado)
+
+        cameras_casa = [d for d in todos_dispositivos if d.categoria == "camera"]
+        itens_geladeira = banco.listar_itens_geladeira()
+        pilha = obter_pilha_sessao()
+
+        mapa_nomes_comodos = {str(c["codigo"]): str(c["nome"]) for c in comodos}
 
         return render_template(
             "painel.html",
-            usuario=usuario,
+            usuario=session["usuario"],
             comodos=comodos,
-            mapa_comodos=mapa_comodos,
-            arestas=arestas,
-            robo=robo,
-            rota_nos=rota_nos,
-            missoes=missoes,
-            logs=logs,
-            total_pilha=pilha_nav.tamanho(),
-            fila_atual=fila_missoes.listar_todas(),
+            comodo_atual=comodo_selecionado,
+            info_comodo=info_comodo,
+            mapa_nomes_comodos=mapa_nomes_comodos,
+            dispositivos=dispositivos_visiveis,
+            todos_dispositivos=todos_dispositivos,
+            cameras_casa=cameras_casa,
+            itens_geladeira=itens_geladeira,
+            opcoes_modo=OPCOES_MODO,
+            potencia_total_watts=potencia_total_watts,
+            dispositivos_ligados=dispositivos_ligados,
+            total_dispositivos=len(todos_dispositivos),
+            media_ar=media_ar,
+            total_ares=len([d for d in todos_dispositivos if d.categoria == "ar"]),
+            ares_ativos=len(ares_ligados),
+            luzes_acesas=luzes_acesas,
+            total_luzes=len(luzes),
+            portas_trancadas=portas_trancadas,
+            total_portas=len(portas),
+            pilha_acoes=pilha.listar_historico(),
+            logs=banco.listar_logs(10),
         )
 
-    @app.route("/grafo/comodo/<codigo>/bloqueio", methods=["POST"])
-    def alternar_obstaculo(codigo: str):
-        usuario = session.get("usuario")
-        if not usuario:
-            return redirect(url_for("login"))
+    @app.route("/dispositivo/<int:id_disp>/atualizar", methods=["POST"])
+    @exigir_login
+    def atualizar_dispositivo(id_disp: int):
+        user = session["usuario"]
+        comodo_retorno = request.form.get("comodo_retorno", "SALA")
+        disp = banco.buscar_dispositivo(id_disp)
+        if not disp:
+            flash("Dispositivo não encontrado.", "erro")
+            return redirect(url_for("painel", comodo=comodo_retorno))
 
-        if usuario["perfil"] != "administrador":
-            flash("Permissão negada: apenas o Administrador pode fechar ou liberar cômodos na planta.", "erro")
+        if disp.restrito_admin and user["perfil"] != "administrador":
             banco.registrar_log(
-                str(usuario["username"]),
-                str(usuario["perfil"]),
-                f"Tentativa bloqueada de interditar o cômodo '{codigo}'.",
+                user["username"],
+                user["perfil"],
+                f"BLOQUEADO: Tentou alterar '{disp.nome}' (restrito a Administrador)",
             )
-            return redirect(url_for("painel"))
-
-        if codigo == "BASE":
-            flash("A Base de Recarga (BASE) não pode ser interditada.", "erro")
-            return redirect(url_for("painel"))
-
-        ficou_bloqueado = banco.alternar_bloqueio_comodo(codigo)
-        estado_txt = "FECHADO (Com Obstáculo)" if ficou_bloqueado else "LIBERADO"
-        banco.registrar_log(
-            str(usuario["username"]),
-            str(usuario["perfil"]),
-            f"Alterou o cômodo '{codigo}' para {estado_txt}.",
-        )
-        flash(f"Cômodo '{codigo}' agora está {estado_txt}. O robô vai desviar dele nas próximas rotas!", "sucesso")
-        return redirect(url_for("painel"))
-
-    @app.route("/navegar/dijkstra", methods=["POST"])
-    def navegar_dijkstra():
-        usuario = session.get("usuario")
-        if not usuario:
-            return redirect(url_for("login"))
-
-        carregar_pilha_sessao()
-        destino = request.form.get("destino", "SALA")
-        comodo_destino = banco.buscar_comodo(destino)
-        if not comodo_destino:
-            flash("Cômodo de destino inválido.", "erro")
-            return redirect(url_for("painel"))
-
-        if comodo_destino["restrito_admin"] and usuario["perfil"] != "administrador":
             flash(
-                f"ACESSO RESTRITO: O ambiente '{comodo_destino['nome']}' ({destino}) só pode ser acessado pelo Administrador.",
+                f"Acesso negado: '{disp.nome}' exige perfil de Morador Principal (Administrador).",
                 "erro",
             )
+            return redirect(url_for("painel", comodo=comodo_retorno))
+
+        acao_rapida = request.form.get("acao_rapida", "")
+        if acao_rapida == "alternar":
+            novo_ligado = not disp.ligado
+        else:
+            novo_ligado = request.form.get("ligado", "1") == "1"
+
+        novo_valor = disp.valor_num
+        if disp.categoria in LIMITES_CATEGORIA and "valor_num" in request.form:
+            rotulo, minimo, maximo = LIMITES_CATEGORIA[disp.categoria]
+            try:
+                novo_valor = float(
+                    validar_numero_inteiro(
+                        request.form.get("valor_num", ""),
+                        rotulo,
+                        minimo,
+                        maximo,
+                    )
+                )
+            except ErroValidacaoDados as exc:
+                flash(str(exc), "erro")
+                return redirect(url_for("painel", comodo=comodo_retorno))
+
+        novo_modo = request.form.get("modo_atual", disp.modo_atual).strip() or disp.modo_atual
+
+        pilha = obter_pilha_sessao()
+        pilha.empilhar(
+            {
+                "id_disp": disp.id_disp,
+                "nome": disp.nome,
+                "ligado_antigo": disp.ligado,
+                "valor_antigo": disp.valor_num,
+                "modo_antigo": disp.modo_atual,
+                "descricao": f"{disp.nome} ({disp.resumo_estado()})",
+            }
+        )
+        salvar_pilha_sessao(pilha)
+
+        banco.atualizar_dispositivo(disp.id_disp, novo_ligado, novo_valor, novo_modo)
+        disp_atualizado = banco.buscar_dispositivo(disp.id_disp)
+        resumo_novo = disp_atualizado.resumo_estado() if disp_atualizado else novo_modo
+        banco.registrar_log(
+            user["username"],
+            user["perfil"],
+            f"Alterou {disp.nome} para: {resumo_novo}",
+        )
+        flash(f"{disp.nome} atualizado: {resumo_novo}.", "sucesso")
+        return redirect(url_for("painel", comodo=comodo_retorno))
+
+    @app.route("/geral/ar", methods=["POST"])
+    @exigir_login
+    def geral_ar():
+        user = session["usuario"]
+        comodo_retorno = request.form.get("comodo_retorno", "SALA")
+        acao_ar = request.form.get("acao_ar", "temperatura")
+
+        ares = banco.listar_por_categoria("ar")
+        fila = FilaAutomacao()
+        pilha = obter_pilha_sessao()
+
+        if acao_ar == "desligar_todos":
+            for ar in ares:
+                fila.enfileirar({"disp": ar, "ligado": False, "temp": ar.valor_num, "modo": ar.modo_atual})
+            cont = 0
+            while not fila.esta_vazia():
+                tarefa = fila.desenfileirar()
+                if tarefa:
+                    d = tarefa["disp"]
+                    pilha.empilhar(
+                        {
+                            "id_disp": d.id_disp,
+                            "nome": d.nome,
+                            "ligado_antigo": d.ligado,
+                            "valor_antigo": d.valor_num,
+                            "modo_antigo": d.modo_atual,
+                            "descricao": f"{d.nome} ({d.resumo_estado()})",
+                        }
+                    )
+                    banco.atualizar_dispositivo(d.id_disp, False, d.valor_num, d.modo_atual)
+                    cont += 1
+            salvar_pilha_sessao(pilha)
             banco.registrar_log(
-                str(usuario["username"]),
-                str(usuario["perfil"]),
-                f"BLOQUEIO DE SEGURANÇA: Visitante tentou enviar o robô para área restrita '{destino}'.",
+                user["username"],
+                user["perfil"],
+                f"COMANDO GERAL: Desligou todos os {cont} aparelhos de Ar-Condicionado",
             )
-            return redirect(url_for("painel"))
+            flash(f"Todos os {cont} aparelhos de Ar-Condicionado foram desligados.", "sucesso")
+            return redirect(url_for("painel", comodo=comodo_retorno))
 
-        robo = banco.obter_estado_robo()
-        origem = str(robo["no_atual"])
-        bloqueados = banco.obter_conjunto_bloqueados()
-
-        if origem == destino:
-            flash(f"O robô já está em '{comodo_destino['nome']}' ({destino}). Escolha outro cômodo!", "sucesso")
-            return redirect(url_for("painel"))
-
-        caminho, distancia = grafo.calcular_menor_caminho_dijkstra(
-            origem=origem,
-            destino=destino,
-            comodos_bloqueados=bloqueados,
-        )
-
-        if not caminho:
-            flash(
-                f"Rota bloqueada! Não existe caminho livre até '{comodo_destino['nome']}' ({destino}) porque os corredores estão fechados.",
-                "erro",
+        try:
+            temp_alvo = validar_numero_inteiro(
+                request.form.get("temperatura_geral", "20"),
+                "Temperatura Geral da Casa",
+                16,
+                28,
             )
-            return redirect(url_for("painel"))
+        except ErroValidacaoDados as exc:
+            flash(str(exc), "erro")
+            return redirect(url_for("painel", comodo=comodo_retorno))
 
-        gasto = round(distancia * 0.85, 1)
-        bateria_atual = float(robo["bateria_pct"])
-        if bateria_atual < gasto and destino != "BASE":
-            flash("Bateria baixa para essa distância! Clique em 'Recarregar na Base' primeiro.", "erro")
-            return redirect(url_for("painel"))
+        for ar in ares:
+            fila.enfileirar({"disp": ar, "ligado": True, "temp": float(temp_alvo), "modo": "Frio"})
 
-        pilha_nav.empilhar(
-            {
-                "no_anterior": origem,
-                "rota_anterior": str(robo["ultima_rota"]),
-                "bateria_anterior": bateria_atual,
-            }
-        )
-        salvar_pilha_sessao()
+        cont = 0
+        while not fila.esta_vazia():
+            tarefa = fila.desenfileirar()
+            if tarefa:
+                d = tarefa["disp"]
+                pilha.empilhar(
+                    {
+                        "id_disp": d.id_disp,
+                        "nome": d.nome,
+                        "ligado_antigo": d.ligado,
+                        "valor_antigo": d.valor_num,
+                        "modo_antigo": d.modo_atual,
+                        "descricao": f"{d.nome} ({d.resumo_estado()})",
+                    }
+                )
+                banco.atualizar_dispositivo(d.id_disp, True, float(temp_alvo), "Frio")
+                cont += 1
 
-        nova_bateria = 100.0 if destino == "BASE" else max(5.0, bateria_atual - gasto)
-        rota_formatada = " -> ".join(caminho)
-        banco.atualizar_estado_robo(destino, nova_bateria, rota_formatada, distancia)
-
+        salvar_pilha_sessao(pilha)
         banco.registrar_log(
-            str(usuario["username"]),
-            str(usuario["perfil"]),
-            f"Rota ótima executada ({distancia}m): {rota_formatada}.",
-        )
-        flash(f"Rota ótima executada: {rota_formatada} (Distância total: {distancia}m).", "sucesso")
-        return redirect(url_for("painel"))
-
-    @app.route("/robo/recarregar", methods=["POST"])
-    def recarregar_base():
-        usuario = session.get("usuario")
-        if not usuario:
-            return redirect(url_for("login"))
-
-        carregar_pilha_sessao()
-        robo = banco.obter_estado_robo()
-        origem = str(robo["no_atual"])
-        bloqueados = banco.obter_conjunto_bloqueados()
-        caminho, distancia = grafo.calcular_menor_caminho_dijkstra(origem, "BASE", bloqueados)
-        rota_str = " -> ".join(caminho) if caminho else "BASE"
-
-        pilha_nav.empilhar(
-            {
-                "no_anterior": origem,
-                "rota_anterior": str(robo["ultima_rota"]),
-                "bateria_anterior": float(robo["bateria_pct"]),
-            }
-        )
-        salvar_pilha_sessao()
-        banco.atualizar_estado_robo("BASE", 100.0, rota_str, distancia)
-        banco.registrar_log(
-            str(usuario["username"]),
-            str(usuario["perfil"]),
-            f"Robô voltou para a BASE ({rota_str}) e recarregou a bateria em 100%.",
-        )
-        flash("Robô voltou para a Base de Recarga e está com 100% de bateria!", "sucesso")
-        return redirect(url_for("painel"))
-
-    @app.route("/pilha/desfazer", methods=["POST"])
-    def desfazer_passo_pilha():
-        usuario = session.get("usuario")
-        if not usuario:
-            return redirect(url_for("login"))
-
-        carregar_pilha_sessao()
-        ultimo = pilha_nav.desempilhar()
-        if not ultimo:
-            flash("Ainda não há movimentos para desfazer. Mova o robô primeiro!", "erro")
-            return redirect(url_for("painel"))
-
-        salvar_pilha_sessao()
-        no_ant = str(ultimo["no_anterior"])
-        rota_ant = str(ultimo["rota_anterior"])
-        bat_ant = float(ultimo["bateria_anterior"])
-        banco.atualizar_estado_robo(no_ant, bat_ant, rota_ant, 0.0)
-        banco.registrar_log(
-            str(usuario["username"]),
-            str(usuario["perfil"]),
-            f"Desfez último movimento (Pilha LIFO): robô voltou para '{no_ant}'.",
-        )
-        flash(f"Movimento desfeito! O robô voltou para o cômodo anterior: {no_ant}.", "sucesso")
-        return redirect(url_for("painel"))
-
-    @app.route("/missao/nova", methods=["POST"])
-    def nova_missao():
-        usuario = session.get("usuario")
-        if not usuario:
-            return redirect(url_for("login"))
-
-        titulo = request.form.get("titulo", "")
-        tipo = request.form.get("tipo", "entrega")
-        origem = request.form.get("origem", "BASE")
-        destino = request.form.get("destino", "SALA")
-        prioridade_str = request.form.get("prioridade", "3")
-        carga_str = request.form.get("carga_kg", "0")
-
-        comodo_dest = banco.buscar_comodo(destino)
-        if comodo_dest and comodo_dest["restrito_admin"] and usuario["perfil"] != "administrador":
-            flash("Permissão negada: Visitantes não podem criar tarefas para áreas restritas (Escritório / Garagem).", "erro")
-            return redirect(url_for("painel"))
-
-        if tipo in ("patrulha", "emergencia") and usuario["perfil"] != "administrador":
-            flash("Permissão negada: Tarefas de Patrulha e Emergência são exclusivas do Administrador.", "erro")
-            return redirect(url_for("painel"))
-
-        ok, erro, prioridade, carga = validar_dados_missao(
-            titulo, origem, destino, prioridade_str, carga_str
-        )
-        if not ok:
-            flash(erro, "erro")
-            return redirect(url_for("painel"))
-
-        banco.cadastrar_missao(titulo.strip(), tipo, origem, destino, prioridade, carga)
-        sincronizar_fila_pendentes()
-        banco.registrar_log(
-            str(usuario["username"]),
-            str(usuario["perfil"]),
-            f"Criou nova tarefa '{titulo.strip()}' ({origem} -> {destino}, Prioridade {prioridade}).",
-        )
-        flash(f"Tarefa '{titulo.strip()}' adicionada na Fila de Prioridade!", "sucesso")
-        return redirect(url_for("painel"))
-
-    @app.route("/fila/carregar", methods=["POST"])
-    def carregar_fila():
-        usuario = session.get("usuario")
-        if not usuario:
-            return redirect(url_for("login"))
-
-        sincronizar_fila_pendentes()
-        total = fila_missoes.tamanho()
-        if total == 0:
-            flash("Não há tarefas pendentes na fila no momento.", "erro")
-            return redirect(url_for("painel"))
-
-        flash(f"{total} tarefas organizadas por ordem de prioridade!", "sucesso")
-        return redirect(url_for("painel"))
-
-    @app.route("/fila/executar", methods=["POST"])
-    def executar_proxima_fila():
-        usuario = session.get("usuario")
-        if not usuario:
-            return redirect(url_for("login"))
-
-        carregar_pilha_sessao()
-        sincronizar_fila_pendentes()
-        item = fila_missoes.desenfileirar()
-        if not item:
-            flash("Todas as tarefas da fila já foram concluídas! Cadastre uma nova tarefa abaixo.", "erro")
-            return redirect(url_for("painel"))
-
-        missao = banco.buscar_missao(int(item["id_missao"]))
-        if not missao:
-            return redirect(url_for("painel"))
-
-        bloqueados = banco.obter_conjunto_bloqueados()
-        caminho, distancia = grafo.calcular_menor_caminho_dijkstra(
-            missao.origem, missao.destino, bloqueados
-        )
-        if not caminho:
-            flash(
-                f"Não foi possível executar '{missao.titulo}': o caminho entre {missao.origem} e {missao.destino} está bloqueado!",
-                "erro",
-            )
-            return redirect(url_for("painel"))
-
-        robo = banco.obter_estado_robo()
-        pilha_nav.empilhar(
-            {
-                "no_anterior": str(robo["no_atual"]),
-                "rota_anterior": str(robo["ultima_rota"]),
-                "bateria_anterior": float(robo["bateria_pct"]),
-            }
-        )
-        salvar_pilha_sessao()
-
-        gasto = missao.calcular_gasto_bateria(distancia)
-        nova_bat = max(5.0, float(robo["bateria_pct"]) - gasto)
-        rota_str = " -> ".join(caminho)
-
-        banco.concluir_missao(missao.id_missao, rota_str, distancia)
-        banco.atualizar_estado_robo(missao.destino, nova_bat, rota_str, distancia)
-        banco.registrar_log(
-            str(usuario["username"]),
-            str(usuario["perfil"]),
-            f"Concluiu tarefa prioritária (P{missao.prioridade}): '{missao.titulo}' | Rota: {rota_str} ({distancia}m, -{gasto}% bateria).",
+            user["username"],
+            user["perfil"],
+            f"COMANDO GERAL: Sincronizou todos os {cont} Ar-Condicionados em {temp_alvo}°C",
         )
         flash(
-            f"Tarefa '{missao.titulo}' concluída! Menor caminho: {rota_str} ({distancia}m | Consumo: -{gasto}% de bateria).",
+            f"Comando Geral executado: Todos os {cont} Ar-Condicionados da casa agora estão ligados em {temp_alvo}°C.",
             "sucesso",
         )
-        return redirect(url_for("painel"))
+        return redirect(url_for("painel", comodo=comodo_retorno))
 
-    @app.route("/missao/<int:id_missao>/excluir", methods=["POST"])
-    def excluir_missao(id_missao: int):
-        usuario = session.get("usuario")
-        if not usuario:
-            return redirect(url_for("login"))
+    @app.route("/geral/luzes", methods=["POST"])
+    @exigir_login
+    def geral_luzes():
+        user = session["usuario"]
+        comodo_retorno = request.form.get("comodo_retorno", "SALA")
+        acao = request.form.get("acao", "desligar")
+        ligar_alvo = acao == "ligar"
 
-        if usuario["perfil"] != "administrador":
-            flash("Apenas o Administrador pode remover tarefas do histórico.", "erro")
-            return redirect(url_for("painel"))
+        luzes = banco.listar_por_categoria("luz")
+        fila = FilaAutomacao()
+        pilha = obter_pilha_sessao()
 
-        banco.excluir_missao(id_missao)
-        flash("Tarefa removida com sucesso.", "sucesso")
-        return redirect(url_for("painel"))
+        for luz in luzes:
+            fila.enfileirar(luz)
+
+        cont = 0
+        while not fila.esta_vazia():
+            d = fila.desenfileirar()
+            if d:
+                pilha.empilhar(
+                    {
+                        "id_disp": d.id_disp,
+                        "nome": d.nome,
+                        "ligado_antigo": d.ligado,
+                        "valor_antigo": d.valor_num,
+                        "modo_antigo": d.modo_atual,
+                        "descricao": f"{d.nome} ({d.resumo_estado()})",
+                    }
+                )
+                intensidade = 100.0 if ligar_alvo and d.valor_num == 0 else d.valor_num
+                banco.atualizar_dispositivo(d.id_disp, ligar_alvo, intensidade, d.modo_atual)
+                cont += 1
+
+        salvar_pilha_sessao(pilha)
+        verbo = "Ligou" if ligar_alvo else "Apagou"
+        banco.registrar_log(
+            user["username"],
+            user["perfil"],
+            f"COMANDO GERAL: {verbo} todas as {cont} lâmpadas da casa",
+        )
+        flash(f"Comando Geral executado: {verbo} todas as {cont} lâmpadas da casa.", "sucesso")
+        return redirect(url_for("painel", comodo=comodo_retorno))
+
+    @app.route("/geral/portas", methods=["POST"])
+    @exigir_login
+    def geral_portas():
+        user = session["usuario"]
+        comodo_retorno = request.form.get("comodo_retorno", "SALA")
+        if user["perfil"] != "administrador":
+            banco.registrar_log(
+                user["username"],
+                user["perfil"],
+                "BLOQUEADO: Convidado tentou acionar o travamento geral de portas",
+            )
+            flash("Apenas o Morador Principal (Admin) pode controlar as fechaduras e portões.", "erro")
+            return redirect(url_for("painel", comodo=comodo_retorno))
+
+        acao = request.form.get("acao", "trancar")
+        trancar_alvo = acao == "trancar"
+
+        portas = banco.listar_por_categoria("porta")
+        fila = FilaAutomacao()
+        pilha = obter_pilha_sessao()
+
+        for porta in portas:
+            fila.enfileirar(porta)
+
+        cont = 0
+        while not fila.esta_vazia():
+            d = fila.desenfileirar()
+            if d:
+                pilha.empilhar(
+                    {
+                        "id_disp": d.id_disp,
+                        "nome": d.nome,
+                        "ligado_antigo": d.ligado,
+                        "valor_antigo": d.valor_num,
+                        "modo_antigo": d.modo_atual,
+                        "descricao": f"{d.nome} ({d.resumo_estado()})",
+                    }
+                )
+                modo_porta = "Trancada com Biometria" if trancar_alvo else "Acesso Liberado Internamente"
+                banco.atualizar_dispositivo(d.id_disp, trancar_alvo, 1.0, modo_porta)
+                cont += 1
+
+        salvar_pilha_sessao(pilha)
+        estado_txt = "trancadas" if trancar_alvo else "destrancadas"
+        banco.registrar_log(
+            user["username"],
+            user["perfil"],
+            f"SEGURANÇA GERAL: Todas as {cont} portas e portões foram {estado_txt}",
+        )
+        flash(f"Segurança Geral: Todas as {cont} portas e portões foram {estado_txt}.", "sucesso")
+        return redirect(url_for("painel", comodo=comodo_retorno))
+
+    @app.route("/geladeira/adicionar", methods=["POST"])
+    @exigir_login
+    def geladeira_adicionar():
+        user = session["usuario"]
+        comodo_retorno = request.form.get("comodo_retorno", "COZ")
+        try:
+            nome_limpo, qtd = validar_item_geladeira(
+                request.form.get("nome_item", ""),
+                request.form.get("quantidade", ""),
+            )
+        except ErroValidacaoDados as exc:
+            flash(str(exc), "erro")
+            return redirect(url_for("painel", comodo=comodo_retorno))
+
+        unidade = request.form.get("unidade", "unidades").strip() or "unidades"
+        categoria_item = request.form.get("categoria_item", "Alimentos").strip() or "Alimentos"
+        banco.adicionar_item_geladeira(nome_limpo, qtd, unidade, categoria_item)
+        banco.registrar_log(
+            user["username"],
+            user["perfil"],
+            f"Geladeira Inteligente: Adicionou {qtd} {unidade} de '{nome_limpo}'",
+        )
+        flash(f"Item '{nome_limpo}' ({qtd} {unidade}) registrado na Geladeira Inteligente.", "sucesso")
+        return redirect(url_for("painel", comodo=comodo_retorno))
+
+    @app.route("/geladeira/item/<int:id_item>/qtd", methods=["POST"])
+    @exigir_login
+    def geladeira_alterar_qtd(id_item: int):
+        user = session["usuario"]
+        comodo_retorno = request.form.get("comodo_retorno", "COZ")
+        delta = 1 if request.form.get("operacao") == "mais" else -1
+        banco.alterar_quantidade_geladeira(id_item, delta)
+        sinal = "+1" if delta > 0 else "-1"
+        banco.registrar_log(
+            user["username"],
+            user["perfil"],
+            f"Geladeira Inteligente: Ajustou quantidade de item ({sinal})",
+        )
+        flash("Estoque da Geladeira Inteligente atualizado.", "sucesso")
+        return redirect(url_for("painel", comodo=comodo_retorno))
+
+    @app.route("/pilha/desfazer", methods=["POST"])
+    @exigir_login
+    def desfazer_acao():
+        user = session["usuario"]
+        comodo_retorno = request.form.get("comodo_retorno", "SALA")
+        pilha = obter_pilha_sessao()
+        ultimo = pilha.desempilhar()
+        salvar_pilha_sessao(pilha)
+
+        if not ultimo:
+            flash("A pilha de alterações está vazia. Nenhuma ação para desfazer.", "aviso")
+            return redirect(url_for("painel", comodo=comodo_retorno))
+
+        banco.atualizar_dispositivo(
+            int(ultimo["id_disp"]),
+            bool(ultimo["ligado_antigo"]),
+            float(ultimo["valor_antigo"]),
+            str(ultimo["modo_antigo"]),
+        )
+        banco.registrar_log(
+            user["username"],
+            user["perfil"],
+            f"DESFEZ AÇÃO (Pilha LIFO): Restaurou {ultimo['descricao']}",
+        )
+        flash(f"Ação desfeita com sucesso: {ultimo['descricao']} restaurado.", "sucesso")
+        return redirect(url_for("painel", comodo=comodo_retorno))
 
     return app
 
 
 app = criar_app()
+
+if __name__ == "__main__":
+    app.run(debug=True, port=8000)
