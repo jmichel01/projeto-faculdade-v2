@@ -465,7 +465,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
             )
         except ErroValidacaoDados as exc:
             flash(str(exc), "erro")
-            return redirect(url_for("painel", comodo=comodo_retorno))
+            return redirect(url_for("painel", comodo=comodo_retorno, geladeira="aberta"))
 
         unidade = request.form.get("unidade", "unidades").strip() or "unidades"
         categoria_item = request.form.get("categoria_item", "Alimentos").strip() or "Alimentos"
@@ -476,7 +476,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
             f"Geladeira Inteligente: Adicionou {qtd} {unidade} de '{nome_limpo}'",
         )
         flash(f"Item '{nome_limpo}' ({qtd} {unidade}) registrado na Geladeira Inteligente.", "sucesso")
-        return redirect(url_for("painel", comodo=comodo_retorno))
+        return redirect(url_for("painel", comodo=comodo_retorno, geladeira="aberta"))
 
     @app.route("/geladeira/item/<int:id_item>/qtd", methods=["POST"])
     @exigir_login
@@ -492,7 +492,7 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
             f"Geladeira Inteligente: Ajustou quantidade de item ({sinal})",
         )
         flash("Estoque da Geladeira Inteligente atualizado.", "sucesso")
-        return redirect(url_for("painel", comodo=comodo_retorno))
+        return redirect(url_for("painel", comodo=comodo_retorno, geladeira="aberta"))
 
     @app.route("/pilha/desfazer", methods=["POST"])
     @exigir_login

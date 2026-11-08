@@ -3,23 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acesso Residencial | DOMUS OS 2050</title>
+    <title>Acesso Seguro | Central Casa Inteligente 2050</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #06080d;
-            --bg-surface: rgba(15, 19, 28, 0.82);
-            --bg-elevated: rgba(23, 29, 42, 0.9);
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-highlight: rgba(56, 189, 248, 0.35);
-            --text-main: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --accent-ice: #38bdf8;
-            --accent-blue: #0284c7;
-            --accent-emerald: #10b981;
+            --navy-deep: #0f2942;
+            --navy-solid: #1e3a8a;
+            --blue-trust: #0284c7;
+            --blue-light-bg: #f0f9ff;
+            --blue-light-border: #bae6fd;
+            --green-safe: #059669;
+            --green-bg: #ecfdf5;
+            --green-border: #a7f3d0;
+            --neutral-bg: #f4f7fa;
+            --neutral-white: #ffffff;
+            --neutral-border: #e2e8f0;
+            --soft-black: #0f172a;
+            --gray-text: #475569;
+            --gray-muted: #64748b;
+            --red-alert: #dc2626;
+            --red-bg: #fef2f2;
         }
         *, *::before, *::after {
             box-sizing: border-box;
@@ -27,335 +32,300 @@
             padding: 0;
         }
         body {
-            background-color: var(--bg-base);
-            background-image:
-                radial-gradient(circle at 15% 15%, rgba(14, 165, 233, 0.12) 0%, transparent 45%),
-                radial-gradient(circle at 85% 85%, rgba(2, 132, 199, 0.08) 0%, transparent 45%),
-                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-            color: var(--text-main);
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--neutral-bg);
+            color: var(--soft-black);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px;
-            line-height: 1.5;
+            padding: 28px;
+            line-height: 1.55;
         }
-        .login-shell {
+        .login-container {
             width: 100%;
-            max-width: 980px;
-            background: var(--bg-surface);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid var(--border-subtle);
-            border-radius: 20px;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            max-width: 1000px;
+            background: var(--neutral-white);
+            border: 1px solid var(--neutral-border);
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(15, 41, 66, 0.08);
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: 1.15fr 1fr;
             overflow: hidden;
         }
-        @media (max-width: 820px) {
-            .login-shell {
+        @media (max-width: 840px) {
+            .login-container {
                 grid-template-columns: 1fr;
             }
         }
-        .showcase-side {
-            padding: 44px 40px;
-            background: linear-gradient(160deg, rgba(12, 17, 26, 0.95) 0%, rgba(7, 10, 16, 0.98) 100%);
-            border-right: 1px solid var(--border-subtle);
+        .institutional-panel {
+            background: linear-gradient(160deg, var(--navy-deep) 0%, #153e63 100%);
+            color: #ffffff;
+            padding: 46px 42px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            position: relative;
         }
-        .system-badge {
+        .trust-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(56, 189, 248, 0.08);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            color: var(--accent-ice);
-            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(186, 230, 253, 0.3);
+            color: #e0f2fe;
             font-size: 11px;
             font-weight: 600;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
-            padding: 6px 12px;
+            padding: 6px 14px;
             border-radius: 999px;
             width: fit-content;
-            margin-bottom: 22px;
+            margin-bottom: 24px;
         }
-        .pulse-dot {
-            width: 7px;
-            height: 7px;
-            background-color: var(--accent-emerald);
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
             border-radius: 50%;
-            box-shadow: 0 0 10px var(--accent-emerald);
         }
-        .showcase-side h1 {
-            font-size: 30px;
+        .institutional-panel h1 {
+            font-size: 28px;
             font-weight: 800;
-            letter-spacing: -0.03em;
-            line-height: 1.18;
-            color: #ffffff;
+            line-height: 1.22;
+            letter-spacing: -0.02em;
             margin-bottom: 14px;
+            color: #ffffff;
         }
-        .showcase-side p.desc {
+        .institutional-panel p.lead {
             font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 30px;
+            color: #cbd5e1;
+            margin-bottom: 28px;
         }
-        .bento-preview {
+        .features-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }
-        .bento-mini {
-            background: rgba(255, 255, 255, 0.025);
-            border: 1px solid var(--border-subtle);
+        .feature-item {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 12px;
             padding: 14px;
         }
-        .bento-mini-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-        .bento-mini-top span {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: var(--accent-ice);
-            font-weight: 600;
-        }
-        .bento-mini strong {
+        .feature-item strong {
             display: block;
             font-size: 13px;
             color: #ffffff;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
-        .bento-mini p {
+        .feature-item span {
             font-size: 12px;
-            color: var(--text-secondary);
+            color: #bae6fd;
         }
-        .spec-footer {
+        .panel-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            padding-top: 16px;
+            font-size: 12px;
+            color: #94a3b8;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border-subtle);
-            padding-top: 16px;
         }
-        .auth-side {
-            padding: 44px 40px;
+        .auth-panel {
+            padding: 46px 42px;
+            background: var(--neutral-white);
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
-        .auth-side h2 {
-            font-size: 21px;
-            font-weight: 700;
+        .auth-panel h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--soft-black);
             letter-spacing: -0.02em;
-            color: #ffffff;
             margin-bottom: 6px;
         }
-        .auth-side p.sub {
-            font-size: 13px;
-            color: var(--text-secondary);
+        .auth-panel p.sub {
+            font-size: 14px;
+            color: var(--gray-text);
             margin-bottom: 24px;
         }
         .alert-error {
-            background: rgba(239, 68, 68, 0.12);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: #fca5a5;
+            background: var(--red-bg);
+            border: 1px solid #fecaca;
+            color: var(--red-alert);
             padding: 12px 14px;
             border-radius: 10px;
             font-size: 13px;
+            font-weight: 600;
             margin-bottom: 18px;
         }
-        .quick-section-label {
-            font-family: 'JetBrains Mono', monospace;
+        .section-label {
             font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-muted);
+            letter-spacing: 0.06em;
+            color: var(--gray-muted);
             margin-bottom: 10px;
         }
-        .quick-cards {
+        .quick-login-stack {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-bottom: 26px;
+            margin-bottom: 24px;
         }
-        .btn-profile {
+        .btn-quick {
             width: 100%;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border-subtle);
+            background: var(--blue-light-bg);
+            border: 1px solid var(--blue-light-border);
             border-radius: 12px;
             padding: 14px 16px;
-            color: var(--text-main);
+            text-align: left;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            text-align: left;
-            transition: all 0.2s ease;
+            transition: all 0.18s ease;
             font-family: inherit;
         }
-        .btn-profile:hover {
-            border-color: var(--accent-ice);
-            background: rgba(56, 189, 248, 0.08);
+        .btn-quick:hover {
+            background: #e0f2fe;
+            border-color: var(--blue-trust);
             transform: translateY(-1px);
         }
-        .btn-profile.primary-profile {
-            background: linear-gradient(135deg, rgba(14, 165, 233, 0.18) 0%, rgba(2, 132, 199, 0.08) 100%);
-            border-color: rgba(56, 189, 248, 0.4);
+        .btn-quick.admin-choice {
+            background: var(--green-bg);
+            border-color: var(--green-border);
         }
-        .btn-profile.primary-profile:hover {
-            background: linear-gradient(135deg, rgba(14, 165, 233, 0.28) 0%, rgba(2, 132, 199, 0.15) 100%);
-            border-color: var(--accent-ice);
+        .btn-quick.admin-choice:hover {
+            background: #d1fae5;
+            border-color: var(--green-safe);
         }
-        .profile-info strong {
+        .quick-text strong {
             display: block;
             font-size: 14px;
             font-weight: 700;
-            color: #ffffff;
+            color: var(--soft-black);
         }
-        .profile-info span {
+        .quick-text span {
             font-size: 12px;
-            color: var(--text-secondary);
+            color: var(--gray-text);
         }
-        .profile-pill {
-            font-family: 'JetBrains Mono', monospace;
+        .pill-enter {
             font-size: 11px;
-            font-weight: 600;
-            padding: 4px 10px;
+            font-weight: 700;
+            padding: 5px 12px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
-            color: var(--accent-ice);
-            border: 1px solid rgba(56, 189, 248, 0.25);
+            background: var(--green-safe);
+            color: #ffffff;
+            white-space: nowrap;
+        }
+        .btn-quick.guest-choice .pill-enter {
+            background: var(--blue-trust);
         }
         .divider {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 20px;
-            color: var(--text-muted);
+            margin-bottom: 18px;
+            color: var(--gray-muted);
             font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
             text-transform: uppercase;
         }
         .divider::before, .divider::after {
             content: "";
             flex: 1;
             height: 1px;
-            background: var(--border-subtle);
+            background: var(--neutral-border);
         }
-        .field-group {
+        .form-group {
             margin-bottom: 14px;
         }
-        .field-group label {
+        .form-group label {
             display: block;
             font-size: 12px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: var(--soft-black);
             margin-bottom: 6px;
         }
-        .field-group input {
+        .form-group input {
             width: 100%;
-            background: rgba(6, 8, 13, 0.8);
-            border: 1px solid var(--border-subtle);
-            color: #ffffff;
+            background: var(--neutral-bg);
+            border: 1px solid var(--neutral-border);
+            color: var(--soft-black);
             padding: 11px 14px;
             border-radius: 10px;
             font-size: 14px;
             font-family: inherit;
-            transition: border-color 0.2s;
         }
-        .field-group input:focus {
+        .form-group input:focus {
             outline: none;
-            border-color: var(--accent-ice);
+            background: var(--neutral-white);
+            border-color: var(--blue-trust);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
         }
         .btn-submit {
             width: 100%;
-            background: #f8fafc;
-            color: #06080d;
+            background: var(--navy-deep);
+            color: #ffffff;
             border: none;
-            padding: 12px;
+            padding: 13px;
             border-radius: 10px;
             font-size: 14px;
             font-weight: 700;
             font-family: inherit;
             cursor: pointer;
             margin-top: 6px;
-            transition: background 0.2s, transform 0.15s;
+            transition: background 0.18s;
         }
         .btn-submit:hover {
-            background: #38bdf8;
-            color: #06080d;
-            transform: translateY(-1px);
+            background: var(--blue-trust);
         }
     </style>
 </head>
 <body>
-    <div class="login-shell">
-        <div class="showcase-side">
+    <div class="login-container">
+        <div class="institutional-panel">
             <div>
-                <div class="system-badge">
-                    <span class="pulse-dot"></span>
-                    <span>DOMUS OS v4.2 // AUTOMAÇÃO RESIDENCIAL</span>
+                <div class="trust-badge">
+                    <span class="status-dot"></span>
+                    <span>DOMUS OS · SEGURANÇA &amp; AUTOMAÇÃO RESIDENCIAL</span>
                 </div>
-                <h1>Controle Total da Sua Casa em Tempo Real.</h1>
-                <p class="desc">
-                    Interface centralizada para gerenciar climatização, Smart TVs, iluminação, áudio multiroom, fechaduras biométricas, câmeras de perímetro e o inventário interno da Geladeira Smart.
+                <h1>Central de Controle da Casa Inteligente</h1>
+                <p class="lead">
+                    Plataforma residencial projetada para oferecer tranquilidade, conforto e controle total sobre todos os cômodos da sua casa em tempo real.
                 </p>
 
-                <div class="bento-preview">
-                    <div class="bento-mini">
-                        <div class="bento-mini-top">
-                            <span>01 // CÔMODOS</span>
-                        </div>
-                        <strong>Sala, Cozinha, Suíte e Externa</strong>
-                        <p>Escolha o ambiente e ajuste cada equipamento individualmente.</p>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <strong>Controle por Cômodo</strong>
+                        <span>Sala, Cozinha, Suíte, Quarto de Hóspedes e Área Externa.</span>
                     </div>
-                    <div class="bento-mini">
-                        <div class="bento-mini-top">
-                            <span>02 // CLIMA MASTER</span>
-                        </div>
-                        <strong>Sincronização Global 20°C</strong>
-                        <p>Padronize todos os ar-condicionados ou apague todas as luzes com 1 toque.</p>
+                    <div class="feature-item">
+                        <strong>Abrir Geladeira Smart</strong>
+                        <span>Visualize o que há dentro da geladeira, validade e estoque.</span>
                     </div>
-                    <div class="bento-mini">
-                        <div class="bento-mini-top">
-                            <span>03 // SMART VISION</span>
-                        </div>
-                        <strong>Interior da Geladeira</strong>
-                        <p>Consulte alimentos e bebidas armazenados, validade e estoque.</p>
+                    <div class="feature-item">
+                        <strong>Climatização 20°C Geral</strong>
+                        <span>Padronize todos os ar-condicionados ou apague as luzes com 1 clique.</span>
                     </div>
-                    <div class="bento-mini">
-                        <div class="bento-mini-top">
-                            <span>04 // SEGURANÇA</span>
-                        </div>
-                        <strong>Câmeras &amp; Portas Biométricas</strong>
-                        <p>Monitoramento ao vivo com restrição de segurança para visitantes.</p>
+                    <div class="feature-item">
+                        <strong>Câmeras &amp; Fechaduras</strong>
+                        <span>Monitoramento seguro com proteção exclusiva para Administrador.</span>
                     </div>
                 </div>
             </div>
 
-            <div class="spec-footer">
-                <span>MISSÃO 2050 // CIÊNCIA DA COMPUTAÇÃO</span>
-                <span>SQLITE3 · POO · FILAS &amp; PILHAS</span>
+            <div class="panel-footer">
+                <span>Missão 2050 · Ciência da Computação</span>
+                <span>POO · Filas · Pilhas · SQLite</span>
             </div>
         </div>
 
-        <div class="auth-side">
-            <h2>Selecione o Perfil de Acesso</h2>
-            <p class="sub">Clique em um dos cartões abaixo para entrar direto no painel da residência.</p>
+        <div class="auth-panel">
+            <h2>Acesso à Residência</h2>
+            <p class="sub">Selecione um perfil para entrar com 1 clique ou informe suas credenciais.</p>
 
             {% with mensagens = get_flashed_messages(with_categories=true) %}
                 {% if mensagens %}
@@ -365,45 +335,45 @@
                 {% endif %}
             {% endwith %}
 
-            <div class="quick-section-label">Entrada Rápida (1 Toque)</div>
-            <div class="quick-cards">
+            <div class="section-label">Acesso Rápido Demonstrativo</div>
+            <div class="quick-login-stack">
                 <form method="POST" action="{{ url_for('login') }}">
                     <input type="hidden" name="username" value="admin">
                     <input type="hidden" name="senha" value="1234">
-                    <button type="submit" class="btn-profile primary-profile">
-                        <div class="profile-info">
+                    <button type="submit" class="btn-quick admin-choice">
+                        <div class="quick-text">
                             <strong>Morador Principal (Admin)</strong>
-                            <span>Controle completo + Portas e Câmeras</span>
+                            <span>Acesso permitido a todos os cômodos, portas e câmeras</span>
                         </div>
-                        <span class="profile-pill">ENTRAR →</span>
+                        <span class="pill-enter">Avançar →</span>
                     </button>
                 </form>
 
                 <form method="POST" action="{{ url_for('login') }}">
                     <input type="hidden" name="username" value="convidado">
                     <input type="hidden" name="senha" value="1234">
-                    <button type="submit" class="btn-profile">
-                        <div class="profile-info">
+                    <button type="submit" class="btn-quick guest-choice">
+                        <div class="quick-text">
                             <strong>Visitante / Convidado</strong>
-                            <span>TV, Ar, Som e Luzes (Sem Portas/Câmeras)</span>
+                            <span>Controla TV, Ar, Som e Luzes (Portas bloqueadas)</span>
                         </div>
-                        <span class="profile-pill">ENTRAR →</span>
+                        <span class="pill-enter">Entrar →</span>
                     </button>
                 </form>
             </div>
 
-            <div class="divider">Acesso Manual</div>
+            <div class="divider">Ou acesse com usuário e senha</div>
 
             <form method="POST" action="{{ url_for('login') }}">
-                <div class="field-group">
-                    <label for="username">Credencial de Usuário</label>
+                <div class="form-group">
+                    <label for="username">Usuário</label>
                     <input type="text" id="username" name="username" placeholder="admin ou convidado" required>
                 </div>
-                <div class="field-group">
-                    <label for="senha">PIN / Senha</label>
-                    <input type="password" id="senha" name="senha" placeholder="••••" required>
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" placeholder="1234" required>
                 </div>
-                <button type="submit" class="btn-submit">Desbloquear Painel</button>
+                <button type="submit" class="btn-submit">Entrar na Central da Casa</button>
             </form>
         </div>
     </div>
