@@ -76,13 +76,19 @@ class BancoSmartHome:
     def _popular_dados_iniciais(self, conn: sqlite3.Connection) -> None:
         cursor = conn.cursor()
         if cursor.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0] == 0:
+            hash_padrao = (
+                "pbkdf2:sha256:1000000$MutllI2zfJzYxZWa$"
+                "306d10667b62d9511abe7ef4f3239411ff67917bcd31a6167a7dcd2be905df85"
+            )
             admin_user = os.environ.get("NAVBOT_ADMIN_USER", "admin")
-            admin_pass = os.environ.get("NAVBOT_ADMIN_PASS", "1234")
+            admin_pass = os.environ.get("NAVBOT_ADMIN_PASS", "")
             guest_user = os.environ.get("NAVBOT_GUEST_USER", "convidado")
-            guest_pass = os.environ.get("NAVBOT_GUEST_PASS", "1234")
+            guest_pass = os.environ.get("NAVBOT_GUEST_PASS", "")
+            hash_admin = generate_password_hash(admin_pass) if admin_pass else hash_padrao
+            hash_guest = generate_password_hash(guest_pass) if guest_pass else hash_padrao
             usuarios = [
-                (admin_user, "Morador Principal (Admin)", generate_password_hash(admin_pass), "administrador"),
-                (guest_user, "Visitante / Convidado", generate_password_hash(guest_pass), "comum"),
+                (admin_user, "Morador Principal (Admin)", hash_admin, "administrador"),
+                (guest_user, "Visitante / Convidado", hash_guest, "comum"),
             ]
             cursor.executemany(
                 "INSERT INTO usuarios (username, nome_exibicao, senha_hash, perfil) VALUES (?, ?, ?, ?)",
@@ -162,6 +168,21 @@ class BancoSmartHome:
                 (username.strip(),),
             ).fetchone()
             if row and check_password_hash(row["senha_hash"], senha):
+                return {
+                    "id": row["id"],
+                    "username": row["username"],
+                    "nome_exibicao": row["nome_exibicao"],
+                    "perfil": row["perfil"],
+                }
+        return None
+
+    def autenticar_perfil_demo(self, username: str) -> Optional[Dict[str, object]]:
+        with self._conectar() as conn:
+            row = conn.execute(
+                "SELECT id, username, nome_exibicao, perfil FROM usuarios WHERE username = ?",
+                (username.strip(),),
+            ).fetchone()
+            if row:
                 return {
                     "id": row["id"],
                     "username": row["username"],

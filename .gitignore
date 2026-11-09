@@ -8,3 +8,5 @@ __pycache__/
 venv/
 .pytest_cache/
 .vercel/
+EXPLICACAO_PARA_O_GRUPO.md
+docs/

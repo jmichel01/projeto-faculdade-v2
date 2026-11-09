@@ -85,7 +85,7 @@ def test_banco_sqlite_e_fluxo_web_completo(tmp_path: Path):
     app.config["TESTING"] = True
     client = app.test_client()
 
-    resp_login = client.post("/login", data={"username": "admin", "senha": "1234"}, follow_redirects=True)
+    resp_login = client.post("/login", data={"perfil_demo": "admin"}, follow_redirects=True)
     assert resp_login.status_code == 200
     assert "Smart Home" in resp_login.get_data(as_text=True)
 
@@ -124,7 +124,7 @@ def test_banco_sqlite_e_fluxo_web_completo(tmp_path: Path):
     assert resp_desfazer.status_code == 200
 
     client.get("/logout")
-    client.post("/login", data={"username": "convidado", "senha": "1234"}, follow_redirects=True)
+    client.post("/login", data={"perfil_demo": "convidado"}, follow_redirects=True)
     portas = banco.listar_por_categoria("porta")
     porta_id = portas[0].id_disp
     resp_bloqueio = client.post(

@@ -109,19 +109,23 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
     @app.route("/login", methods=["GET", "POST"])
     def login():
         if request.method == "POST":
-            username = request.form.get("username", "")
-            senha = request.form.get("senha", "")
-            user = banco.autenticar(username, senha)
+            perfil_demo = request.form.get("perfil_demo", "").strip()
+            if perfil_demo in ("admin", "convidado"):
+                user = banco.autenticar_perfil_demo(perfil_demo)
+            else:
+                username = request.form.get("username", "")
+                senha = request.form.get("senha", "")
+                user = banco.autenticar(username, senha)
             if user:
                 session["usuario"] = user
                 session["pilha_comandos"] = []
                 banco.registrar_log(
                     user["username"],
                     user["perfil"],
-                    "Acessou a Central da Casa Inteligente",
+                    "Acessou a Central Smart Home",
                 )
                 return redirect(url_for("painel"))
-            flash("Usuário ou senha inválidos. Utilize os botões de acesso rápido abaixo.", "erro")
+            flash("Credenciais inválidas. Utilize os botões de acesso rápido abaixo.", "erro")
         return render_template("login.html")
 
     @app.route("/logout")

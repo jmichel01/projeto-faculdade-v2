@@ -338,8 +338,7 @@
             <div class="section-label">Acesso Rápido Demonstrativo</div>
             <div class="quick-login-stack">
                 <form method="POST" action="{{ url_for('login') }}">
-                    <input type="hidden" name="username" value="admin">
-                    <input type="hidden" name="senha" value="1234">
+                    <input type="hidden" name="perfil_demo" value="admin">
                     <button type="submit" class="btn-quick admin-choice">
                         <div class="quick-text">
                             <strong>Morador Principal (Admin)</strong>
@@ -350,8 +349,7 @@
                 </form>
 
                 <form method="POST" action="{{ url_for('login') }}">
-                    <input type="hidden" name="username" value="convidado">
-                    <input type="hidden" name="senha" value="1234">
+                    <input type="hidden" name="perfil_demo" value="convidado">
                     <button type="submit" class="btn-quick guest-choice">
                         <div class="quick-text">
                             <strong>Visitante / Convidado</strong>
@@ -367,11 +365,11 @@
             <form method="POST" action="{{ url_for('login') }}">
                 <div class="form-group">
                     <label for="username">Usuário</label>
-                    <input type="text" id="username" name="username" placeholder="admin ou convidado" required>
+                    <input type="text" id="username" name="username" placeholder="Digite seu usuário" required>
                 </div>
                 <div class="form-group">
                     <label for="senha">Senha</label>
-                    <input type="password" id="senha" name="senha" placeholder="1234" required>
+                    <input type="password" id="senha" name="senha" placeholder="••••••••" required>
                 </div>
                 <button type="submit" class="btn-submit">Entrar na Central da Casa</button>
             </form>
