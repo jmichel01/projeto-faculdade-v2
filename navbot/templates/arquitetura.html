@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagramas UML &amp; Banco de Dados | Smart Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#e0f2fe',
+                primaryTextColor: '#0f172a',
+                primaryBorderColor: '#0284c7',
+                lineColor: '#0f2942',
+                secondaryColor: '#ecfdf5',
+                tertiaryColor: '#f8fafc',
+                fontFamily: 'Inter, sans-serif'
+            }
+        });
+    </script>
+    <style>
+        :root {
+            --navy-deep: #0f2942;
+            --navy-panel: #163656;
+            --blue-primary: #0284c7;
+            --blue-light-bg: #f0f9ff;
+            --blue-light-border: #bae6fd;
+            --green-success: #059669;
+            --green-bright: #10b981;
+            --neutral-canvas: #f4f7fa;
+            --neutral-white: #ffffff;
+            --neutral-border: #e2e8f0;
+            --soft-black: #0f172a;
+            --gray-body: #475569;
+        }
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: var(--neutral-canvas);
+            color: var(--soft-black);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            line-height: 1.55;
+        }
+        .topbar {
+            background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-panel) 100%);
+            color: #ffffff;
+            padding: 20px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .topbar h1 {
+            font-size: 20px;
+            font-weight: 800;
+        }
+        .topbar span {
+            font-size: 13px;
+            color: #bae6fd;
+            display: block;
+        }
+        .btn-voltar {
+            background: var(--green-bright);
+            color: var(--soft-black);
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 28px 24px 60px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+        .diagram-card {
+            background: var(--neutral-white);
+            border: 1px solid var(--neutral-border);
+            border-top: 4px solid var(--blue-primary);
+            border-radius: 16px;
+            padding: 26px;
+            box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05);
+        }
+        .diagram-card h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--navy-deep);
+            margin-bottom: 6px;
+        }
+        .diagram-card p.desc {
+            font-size: 14px;
+            color: var(--gray-body);
+            margin-bottom: 20px;
+        }
+        .mermaid-box {
+            background: #f8fafc;
+            border: 1px solid var(--neutral-border);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+            display: flex;
+            justify-content: center;
+        }
+        .sql-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+            font-size: 13px;
+        }
+        .sql-table th {
+            background: var(--navy-deep);
+            color: #ffffff;
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .sql-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--neutral-border);
+            color: var(--soft-black);
+        }
+        .sql-table code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--blue-light-bg);
+            color: var(--navy-deep);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div>
+            <h1>Smart Home — Documentação de Arquitetura (UML &amp; Banco de Dados)</h1>
+            <span>Diagrama de Classes POO · Diagrama de Sequência · Modelo Entidade-Relacionamento (SQLite3)</span>
+        </div>
+        <a href="{{ url_for('painel') }}" class="btn-voltar">← Voltar ao Painel da Casa</a>
+    </header>
+
+    <main class="container">
+        <!-- 1. DIAGRAMA DE CLASSES UML -->
+        <section class="diagram-card">
+            <h2>1. Diagrama de Classes (UML — Programação Orientada a Objetos e Estruturas)</h2>
+            <p class="desc">
+                Representa a superclasse encapsulada <code>DispositivoCasa</code> (com atributos privados e <code>@property</code>),
+                as 7 subclasses polimórficas que sobrescrevem <code>consumo_watts()</code> e <code>resumo_estado()</code>,
+                as estruturas de dados em memória (<code>FilaAutomacao</code> FIFO e <code>PilhaComandos</code> LIFO)
+                e a camada de persistência <code>BancoSmartHome</code>.
+            </p>
+            <div class="mermaid-box">
+                <pre class="mermaid">
+classDiagram
+    class DispositivoCasa {
+        -int _id_disp
+        -str _comodo_codigo
+        -str _nome
+        -str _categoria
+        -bool _ligado
+        -float _valor_num
+        -str _modo_atual
+        -str _detalhe_extra
+        -bool _restrito_admin
+        +id_disp() int
+        +ligado() bool
+        +valor_num() float
+        +modo_atual() str
+        +consumo_watts() int
+        +resumo_estado() str
+    }
+
+    class ArCondicionado {
+        +consumo_watts() int
+        +resumo_estado() str
+    }
+    class SmartTV {
+        +consumo_watts() int
+        +resumo_estado() str
+    }
+    class GeladeiraSmart {
+        +consumo_watts() int
+        +resumo_estado() str
+    }
+    class SistemaSom {
+        +consumo_watts() int
+        +resumo_estado() str
+    }
+    class Iluminacao {
+        +consumo_watts() int
+        +resumo_estado() str
+    }
+    class FechaduraPorta {
+        +consumo_watts() int
+        +resumo_estado() str
+    }
+    class CameraSeguranca {
+        +consumo_watts() int
+        +resumo_estado() str
+    }
+
+    DispositivoCasa <|-- ArCondicionado
+    DispositivoCasa <|-- SmartTV
+    DispositivoCasa <|-- GeladeiraSmart
+    DispositivoCasa <|-- SistemaSom
+    DispositivoCasa <|-- Iluminacao
+    DispositivoCasa <|-- FechaduraPorta
+    DispositivoCasa <|-- CameraSeguranca
+
+    class FilaAutomacao {
+        -List _fila
+        +enfileirar(comando) void
+        +desenfileirar() Any
+        +esta_vazia() bool
+        +tamanho() int
+    }
+
+    class PilhaComandos {
+        -List _itens
+        -int _capacidade
+        +empilhar(estado_anterior) void
+        +desempilhar() Dict
+        +listar_historico() List
+        +tamanho() int
+    }
+
+    class BancoSmartHome {
+        +Path caminho_banco
+        +inicializar_tabelas() void
+        +autenticar(username, senha) Dict
+        +listar_comodos() List
+        +listar_dispositivos(comodo_codigo) List~DispositivoCasa~
+        +atualizar_dispositivo(id_disp, ligado, valor_num, modo_atual) void
+        +listar_itens_geladeira() List
+        +adicionar_item_geladeira(nome, qtd, unidade, cat) void
+        +registrar_log(usuario, perfil, acao) void
+    }
+
+    BancoSmartHome ..> DispositivoCasa : instancia via Factory
+                </pre>
+            </div>
+        </section>
+
+        <!-- 2. DIAGRAMA DE SEQUÊNCIA UML -->
+        <section class="diagram-card">
+            <h2>2. Diagrama de Sequência (UML — Fluxo de Controle, Fila FIFO e Pilha LIFO)</h2>
+            <p class="desc">
+                Demonstra a sequência de chamadas entre o Morador (Navegador), o Controlador Flask (<code>app.py</code>),
+                o Validador de Dados (<code>validadores.py</code>), a Fila FIFO / Pilha LIFO (<code>estruturas.py</code>)
+                e o Banco de Dados SQLite (<code>banco.py</code>).
+            </p>
+            <div class="mermaid-box">
+                <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Morador as Morador (Navegador)
+    participant Flask as Controlador Flask (app.py)
+    participant Val as Validador (validadores.py)
+    participant Fila as FilaAutomacao (FIFO)
+    participant Pilha as PilhaComandos (LIFO)
+    participant DB as BancoSmartHome (SQLite)
+
+    Morador->>Flask: POST /geral/ar (temperatura_geral = "20")
+    Flask->>Val: validar_numero_inteiro("20", "Temperatura", 16, 28)
+    Val-->>Flask: Retorna int(20)
+    Flask->>DB: listar_por_categoria("ar")
+    DB-->>Flask: Lista objetos ArCondicionado
+
+    loop Para cada ArCondicionado da casa
+        Flask->>Fila: enfileirar(ar, temp=20, ligado=True)
+    end
+
+    loop Enquanto Fila não está vazia (FIFO)
+        Flask->>Fila: desenfileirar()
+        Flask->>Pilha: empilhar(estado_antigo do aparelho)
+        Flask->>DB: atualizar_dispositivo(id_disp, True, 20.0, "Frio")
+    end
+
+    Flask->>DB: registrar_log(usuario, perfil, "Sincronizou todos os Ar em 20°C")
+    Flask-->>Morador: Redireciona para Painel atualizado (HTTP 200)
+
+    Note over Morador,DB: Caso o morador clique em "Reverter Alteração (LIFO)"
+    Morador->>Flask: POST /pilha/desfazer
+    Flask->>Pilha: desempilhar()
+    Pilha-->>Flask: Retorna último estado salvo (topo da pilha)
+    Flask->>DB: atualizar_dispositivo(id_disp, ligado_antigo, valor_antigo, modo_antigo)
+    Flask->>DB: registrar_log(usuario, perfil, "DESFEZ AÇÃO (Pilha LIFO)")
+    Flask-->>Morador: Restaura estado anterior na tela
+                </pre>
+            </div>
+        </section>
+
+        <!-- 3. DIAGRAMA DO BANCO DE DADOS (DER + ESQUEMA SQL) -->
+        <section class="diagram-card">
+            <h2>3. Modelagem do Banco de Dados Relacional (DER — SQLite3)</h2>
+            <p class="desc">
+                O arquivo de banco de dados <code>smarthome2050.db</code> possui 5 tabelas relacionais normalizadas que armazenam
+                usuários, cômodos, dispositivos da casa, estoque interno da geladeira e histórico de auditoria.
+            </p>
+            <div class="mermaid-box">
+                <pre class="mermaid">
+erDiagram
+    COMODOS ||--o{ DISPOSITIVOS : "possui (comodo_codigo)"
+    USUARIOS ||--o{ HISTORICO_EVENTOS : "registra (usuario)"
+
+    USUARIOS {
+        INTEGER id PK
+        TEXT username UK
+        TEXT nome_exibicao
+        TEXT senha_hash
+        TEXT perfil
+    }
+
+    COMODOS {
+        TEXT codigo PK
+        TEXT nome
+        TEXT descricao
+        INTEGER ordem
+    }
+
+    DISPOSITIVOS {
+        INTEGER id PK
+        TEXT comodo_codigo FK
+        TEXT nome
+        TEXT categoria
+        INTEGER ligado
+        REAL valor_num
+        TEXT modo_atual
+        TEXT detalhe_extra
+        INTEGER restrito_admin
+    }
+
+    ITENS_GELADEIRA {
+        INTEGER id PK
+        TEXT nome_item
+        INTEGER quantidade
+        TEXT unidade
+        TEXT categoria_item
+        TEXT validade_status
+    }
+
+    HISTORICO_EVENTOS {
+        INTEGER id PK
+        TEXT data_hora
+        TEXT usuario
+        TEXT perfil
+        TEXT acao
+    }
+                </pre>
+            </div>
+
+            <table class="sql-table">
+                <thead>
+                    <tr>
+                        <th>Tabela SQLite</th>
+                        <th>Chave Primária</th>
+                        <th>Colunas Principais</th>
+                        <th>Finalidade no Sistema</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>usuarios</code></td>
+                        <td><code>id (INTEGER PK)</code></td>
+                        <td><code>username</code>, <code>nome_exibicao</code>, <code>senha_hash</code>, <code>perfil</code></td>
+                        <td>Autenticação com hash PBKDF2 e controle de permissão (<code>administrador</code> vs <code>comum</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>comodos</code></td>
+                        <td><code>codigo (TEXT PK)</code></td>
+                        <td><code>nome</code>, <code>descricao</code>, <code>ordem</code></td>
+                        <td>Cadastro dos 5 ambientes da casa (<code>SALA</code>, <code>COZ</code>, <code>SUITE</code>, <code>QUARTO2</code>, <code>EXTERNA</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>dispositivos</code></td>
+                        <td><code>id (INTEGER PK)</code></td>
+                        <td><code>comodo_codigo (FK)</code>, <code>nome</code>, <code>categoria</code>, <code>ligado</code>, <code>valor_num</code>, <code>modo_atual</code>, <code>restrito_admin</code></td>
+                        <td>Estado persistente dos 23 aparelhos (TVs, Ar, Geladeira, Som, Luzes, Portas e Câmeras).</td>
+                    </tr>
+                    <tr>
+                        <td><code>itens_geladeira</code></td>
+                        <td><code>id (INTEGER PK)</code></td>
+                        <td><code>nome_item</code>, <code>quantidade</code>, <code>unidade</code>, <code>categoria_item</code>, <code>validade_status</code></td>
+                        <td>Estoque interno de alimentos e bebidas da Geladeira Inteligente.</td>
+                    </tr>
+                    <tr>
+                        <td><code>historico_eventos</code></td>
+                        <td><code>id (INTEGER PK)</code></td>
+                        <td><code>data_hora</code>, <code>usuario</code>, <code>perfil</code>, <code>acao</code></td>
+                        <td>Trilha de auditoria de todos os comandos executados ou bloqueados.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>

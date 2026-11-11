@@ -123,6 +123,10 @@ def test_banco_sqlite_e_fluxo_web_completo(tmp_path: Path):
     resp_desfazer = client.post("/pilha/desfazer", data={"comodo_retorno": "SALA"}, follow_redirects=True)
     assert resp_desfazer.status_code == 200
 
+    resp_arq = client.get("/arquitetura")
+    assert resp_arq.status_code == 200
+    assert "Diagrama de Classes" in resp_arq.get_data(as_text=True)
+
     client.get("/logout")
     client.post("/login", data={"perfil_demo": "convidado"}, follow_redirects=True)
     portas = banco.listar_por_categoria("porta")

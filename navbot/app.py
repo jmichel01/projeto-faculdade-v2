@@ -208,6 +208,20 @@ def criar_app(caminho_banco: Path | None = None) -> Flask:
             logs=banco.listar_logs(10),
         )
 
+    @app.route("/arquitetura")
+    @exigir_login
+    def arquitetura():
+        comodos = banco.listar_comodos()
+        todos_dispositivos = banco.listar_dispositivos()
+        return render_template(
+            "arquitetura.html",
+            usuario=session["usuario"],
+            comodos=comodos,
+            total_dispositivos=len(todos_dispositivos),
+            potencia_total_watts=sum(d.consumo_watts() for d in todos_dispositivos),
+            dispositivos_ligados=sum(1 for d in todos_dispositivos if d.ligado),
+        )
+
     @app.route("/dispositivo/<int:id_disp>/atualizar", methods=["POST"])
     @exigir_login
     def atualizar_dispositivo(id_disp: int):
