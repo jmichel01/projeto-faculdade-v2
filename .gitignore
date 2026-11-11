@@ -9,4 +9,6 @@ venv/
 .pytest_cache/
 .vercel/
 EXPLICACAO_PARA_O_GRUPO.md
+ONBOARDING.md
+GUIA_APRESENTACAO_PROFESSORA.md
 docs/
